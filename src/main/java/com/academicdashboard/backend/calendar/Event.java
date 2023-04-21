@@ -1,4 +1,4 @@
-package com.academicdashboard.backend.event;
+package com.academicdashboard.backend.calendar;
 
 import java.util.List;
 
