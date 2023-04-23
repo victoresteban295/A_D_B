@@ -1,4 +1,4 @@
-package com.academicdashboard.backend.calendar;
+package com.academicdashboard.backend.reminder;
 
 import java.util.List;
 
@@ -13,27 +13,28 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Document(collection = "calendar")
+@Document(collection = "reminder_list")
 @Getter
 @Setter
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class Calendar {
+public class ReminderList {
 
     @Id
     private ObjectId id; //MongoDB ObjectId
     
-    private String calendarName;
+    //Reminders List's Details
+    private String title;
     private String description;
 
-    //Data Relationship
+    //Data Relationship: Individual Reminders under this List
     @DocumentReference
-    private List<Event> events;
+    private List<Reminder> reminders; //Individual Reminders
 
-    //Constructor: User first creates a calendar (Called by PUT Method)
-    public Calendar(String calendarName, String description) {
-        this.calendarName = calendarName;
+    //Constructor: User first creates a Reminder List (Called by PUT Method) 
+    public ReminderList(String title, String description) {
+        this.title = title;
         this.description = description;
     }
 }

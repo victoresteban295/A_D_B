@@ -23,6 +23,12 @@ public class Checkpoint {
     
     //Checkpoint's Detail
     private String list; //List it Belongs to (Might Delete)
-    private String title; 
+    private String content; 
     private boolean isComplete;
+
+    //Constructor: Called each time user creates a new checkpoint
+    public Checkpoint(String content, boolean isComplete) {
+        this.content = content;
+        this.isComplete = isComplete;
+    }
 }

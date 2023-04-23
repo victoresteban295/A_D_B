@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import com.academicdashboard.backend.calendar.Calendar;
 import com.academicdashboard.backend.checklist.Checklist;
 import com.academicdashboard.backend.course.Course;
-import com.academicdashboard.backend.reminder.Reminder;
+import com.academicdashboard.backend.reminder.ReminderList;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -62,6 +62,6 @@ public class Professor {
     private List<Checklist> checklists;
 
     @DocumentReference
-    private List<Reminder> reminders;
+    private List<ReminderList> reminderList;
 
 }

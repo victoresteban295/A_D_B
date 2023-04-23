@@ -30,5 +30,11 @@ public class Checklist {
 
     //Data Relationship: All Checkpoints under this checklist
     @DocumentReference
-    private List<Checkpoint> checkPoints;
+    private List<Checkpoint> checkpoints;
+
+    //Constructor: Called when user first creates a new checklist
+    public Checklist(String title, String description) {
+        this.title = title;
+        this.description = description;
+    }
 }
