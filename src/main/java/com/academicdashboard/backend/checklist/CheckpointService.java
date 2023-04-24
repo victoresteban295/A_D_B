@@ -1,6 +1,5 @@
 package com.academicdashboard.backend.checklist;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -16,11 +15,11 @@ public class CheckpointService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public Checkpoint createCheckpoint(String content, ObjectId checklistId) {
+    public Checkpoint createCheckpoint(String content, String checklistTitle) {
         Checkpoint checkpoint = checkpointRepository.insert(new Checkpoint(content, false));
 
         mongoTemplate.update(Checklist.class)
-            .matching(Criteria.where("checklistId").is("id"))
+            .matching(Criteria.where("title").is(checklistTitle))
             .apply(new Update().push("checkpoints").value(checkpoint))
             .first();
 
