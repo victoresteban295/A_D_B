@@ -29,6 +29,8 @@ public class Student {
     @Id
     private ObjectId id; //MongoDB ObjectId
 
+    private String userId; //Public Id (JNanoId)
+
     //Student's Personal Info
     private String firstName;
     private String lastName;
