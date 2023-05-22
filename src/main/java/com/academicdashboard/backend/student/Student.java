@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import com.academicdashboard.backend.calendar.Calendar;
 import com.academicdashboard.backend.checklist.Checklist;
+import com.academicdashboard.backend.checklist.Grouplist;
 import com.academicdashboard.backend.course.Course;
 import com.academicdashboard.backend.reminder.ReminderList;
 
@@ -56,6 +57,9 @@ public class Student {
 
     @DocumentReference
     private List<Calendar> calendars;
+
+    @DocumentReference
+    private List<Grouplist> grouplists;
 
     @DocumentReference
     private List<Checklist> checklists;

@@ -16,6 +16,7 @@
         "phone": "3232337489",
         "courses": [],
         "calendars": [],
+        "grouplists": [],
         "checklists": [],
         "reminders": []
     },
@@ -36,6 +37,7 @@
         "phone": "3234538934",
         "courses": [],
         "calendars": [],
+        "grouplists": [],
         "checklists": [],
         "reminders": []
     },
@@ -56,6 +58,7 @@
         "phone": "5624093456",
         "courses": [],
         "calendars": [],
+        "grouplists": [],
         "checklists": [],
         "reminders": []
     },
@@ -76,6 +79,7 @@
         "phone": "8397573839",
         "courses": [],
         "calendars": [],
+        "grouplists": [],
         "checklists": [],
         "reminders": []
     }

@@ -1,11 +1,7 @@
 package com.academicdashboard.backend.checklist;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -42,7 +38,7 @@ public class ChecklistService {
         return checklist;
     }
 
-    //Modify Existing Checklist/Group | Returns Modified Checklist
+    //Modify Existing Checklist | Returns Modified Checklist
     public Checklist modifyChecklist(String listId, String newTitle) {
         Query query = new Query().addCriteria(Criteria.where("listId").is(listId));
         Update updateDef = new Update().set("title", newTitle);
@@ -55,55 +51,17 @@ public class ChecklistService {
     public void deleteChecklist(String listId) {
         repository.deleteChecklistByListId(listId);
     }
-    
-    //Create New Checklist Group | Returns Checklist Group Created
-    public Checklist createChecklistGroup(String userId, String title) {
-        String listId = NanoIdUtils.randomNanoId(random, alphabet, 5); //Create New Public Id
-        Checklist checklist = repository.insert(new Checklist(listId, title, true)); //New Checklist Group 
 
-        mongoTemplate.update(Student.class)
-            .matching(Criteria.where("userId").is(userId))
-            .apply(new Update().push("checklists").value(checklist))
-            .first();
+    //Add Checkpoint to Existing Checklist
+    public Checklist createCheckpoint(String listId, String content) {
+        String pointId = NanoIdUtils.randomNanoId(random, alphabet, 5); //Create New Public Id
+        Checkpoint checkpoint = new Checkpoint(pointId, content, false, false);
 
-        return checklist;
-    }
+        Query query = new Query().addCriteria(Criteria.where("listId").is(listId));
+        Update updateDef = new Update().push("checkpoints").value(checkpoint);
+        FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true); //Returns Modified Value
 
-    //Add Checklist to Group | Returns Checklist Group
-    public Checklist addToChecklistGroup(String groupId, String listId) {
-        Checklist group = repository.findChecklistByListId(groupId).get();
-        Checklist checklist = repository.findChecklistByListId(listId).get();
-
-        if (group.isGroup()) {
-            repository.deleteChecklistByListId(listId); //Avoid Duplications
-            
-            Query query = new Query().addCriteria(Criteria.where("listId").is(groupId)); //Find Group
-            Update updateDef = new Update().push("children").value(checklist);
-            FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true); //Returns Modified Value
-
-            return mongoTemplate.findAndModify(query, updateDef, options, Checklist.class);
-
-        } else {
-            return checklist;
-        }
-    }
-
-    public Checklist removeFromChecklistGroup(String groupId, String listId) {
-        Checklist group = repository.findChecklistByListId(groupId).get();
-        Checklist checklist = repository.findChecklistByListId(listId).get();
-
-        if (group.isGroup()) {
-            repository.deleteChecklistByListId(listId); //Avoid Duplications
-            
-            Query query = new Query().addCriteria(Criteria.where("listId").is(groupId)); //Find Group
-            Update updateDef = new Update().push("children").value(checklist);
-            FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true); //Returns Modified Value
-
-            return mongoTemplate.findAndModify(query, updateDef, options, Checklist.class);
-
-        } else {
-            return checklist;
-        }
+        return mongoTemplate.findAndModify(query, updateDef, options, Checklist.class);
     }
 
     //DONT FORGET TO LIMIT CHECKPOINT TO 50 PER CHECKLIST

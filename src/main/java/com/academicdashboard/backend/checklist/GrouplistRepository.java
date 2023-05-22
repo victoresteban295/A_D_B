@@ -8,10 +8,10 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ChecklistRepository extends MongoRepository<Checklist, ObjectId> {
+public interface GrouplistRepository extends MongoRepository<Grouplist, ObjectId> {
 
-    Optional<Checklist> findChecklistByListId(String listId);
-
+    Optional<Grouplist> findGrouplistByListId(String groupId);
+   
     @DeleteQuery
-    void deleteChecklistByListId(String listId);
+    void deleteGrouplistByGroupId(String groupId);
 }

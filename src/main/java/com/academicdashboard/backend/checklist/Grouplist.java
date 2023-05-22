@@ -14,33 +14,30 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Document(collection = "checklist")
+@Document(collection = "grouplist")
 @Getter
 @Setter
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class Checklist {
+public class Grouplist {
 
     @Id
     private ObjectId id; //MongoDB ObjectId
-    
-    //CheckList's Details
-    private String listId; //Used for Queries (JNanoId)
+
+    //Grouplist's Details
+    private String groupId;
     private String title;
 
     @DocumentReference
-    private List<Checkpoint> checkpoints;
+    private List<Checklist> checklists;
 
-    //Constructor: Individual Checklist is Created
-    public Checklist(
-            String listId,
-            String title
-        ) {
+    public Grouplist(
+            String groupId,
+            String title) {
 
-        this.listId = listId;
+        this.groupId = groupId;
         this.title = title;
-        this.checkpoints = new ArrayList<>();
+        this.checklists = new ArrayList<>();
     }
-
 }
