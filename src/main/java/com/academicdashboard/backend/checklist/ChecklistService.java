@@ -1,5 +1,6 @@
 package com.academicdashboard.backend.checklist;
 
+import java.util.List;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,9 @@ import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
 @Service
 public class ChecklistService {
+
+    @Autowired
+    private CheckpointService pointService;
 
     @Autowired
     private ChecklistRepository repository;
@@ -49,7 +53,17 @@ public class ChecklistService {
 
     //Delete Existing Checklist | Void 
     public void deleteChecklist(String listId) {
-        repository.deleteChecklistByListId(listId);
+
+        //Delete Corresponding Checkpoints
+        Checklist checklist = repository.findChecklistByListId(listId).get();
+        List<Checkpoint> checkpoints = checklist.getCheckpoints(); 
+        for(Checkpoint point : checkpoints) {
+           pointService.deleteCheckpoint(point.getPointId());
+        }
+
+        //Delete Checklist
+        Query query = new Query().addCriteria(Criteria.where("listId").is(listId));
+        mongoTemplate.remove(query, Checklist.class);
     }
 
     //Add Checkpoint to Existing Checklist
@@ -66,13 +80,13 @@ public class ChecklistService {
 
     //DONT FORGET TO LIMIT CHECKPOINT TO 50 PER CHECKLIST
     //Add Checkpoint to an existing Checklist
-    public Checklist addCheckpoint(String title, String content) {
+    public Checklist addCheckpoint(String listId, String content) {
         String pubId = NanoIdUtils.randomNanoId(random, alphabet, 5); //Create New Public Id
         
         //Create Checkpoint
         Checkpoint checkpoint = new Checkpoint(pubId, content, false, false);
 
-        Query query = new Query().addCriteria(Criteria.where("title").is(title));
+        Query query = new Query().addCriteria(Criteria.where("listId").is(listId));
         Update updateDef = new Update().push("toComplete").value(checkpoint);
         FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true); //Returns Modified Value
 

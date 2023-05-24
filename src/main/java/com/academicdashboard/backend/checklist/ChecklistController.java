@@ -69,17 +69,4 @@ public class ChecklistController {
                 ), 
                 HttpStatus.CREATED);
     }
-
-    //Add Checkpoint to existing Checklist (Incomplete)
-    @PutMapping("checkpoint/{title}")
-    public ResponseEntity<Checklist> addCheckpoint(
-            @RequestBody Map<String, String> payload,
-            @PathVariable String title) {
-        
-        return new ResponseEntity<Checklist>(
-            service.addCheckpoint(title, payload.get("content")), 
-            HttpStatus.CREATED);
-    }
-
-    //Mark Checkpoint as Completed
 }
