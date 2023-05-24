@@ -38,12 +38,12 @@ public class CheckpointService {
         return new Update().set(field, value);
     }
 
-    private static Update pushUpdate(String field, Checkpoint value) {
-        return new Update().push(field).value(value);
+    private static Update pushUpdate(String field, Checkpoint checkpoint) {
+        return new Update().push(field).value(checkpoint);
     }
 
-    private static Update pullUpdate(String field, Checkpoint value) {
-        return new Update().pull(field, value); 
+    private static Update pullUpdate(String field, Checkpoint checkpoint) {
+        return new Update().pull(field, checkpoint); 
     }
 
     /*********** OPTION DEFINITION METHOD ***********/

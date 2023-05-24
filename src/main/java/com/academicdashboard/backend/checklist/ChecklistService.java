@@ -26,70 +26,77 @@ public class ChecklistService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private Random random = new Random();
-    private char[] alphabet = {'a','b','c','d','e','1','2','3','5'};
+    //Create New Public Id (JNanoId)
+    private static String publicId(int size) {
+        Random random = new Random();
+        char[] alphabet = {'a','b','c','d','e','1','2','3','5'};
+        return NanoIdUtils.randomNanoId(random, alphabet, size); //Create New Public Id
+    }
+
+    /*********** QUERY DEFINITION METHOD ***********/
+    private static Query query(String field, String equalsValue) {
+        return new Query().addCriteria(Criteria.where(field).is(equalsValue));
+    } 
+
+    /*********** UPDATE DEFINITION METHODS ***********/
+    private static Update setUpdate(String field, String value) {
+        return new Update().set(field, value);
+    }
+
+    private static Update pushUpdate(String field, Checklist checklist) {
+        return new Update().push(field).value(checklist);
+    }
+
+    private static Update pullUpdate(String field, Checklist checklist) {
+        return new Update().pull(field, checklist); 
+    }
+
+    /*********** OPTION DEFINITION METHOD ***********/
+    private static FindAndModifyOptions options(boolean returnNew, boolean upsert) {
+        return new FindAndModifyOptions().returnNew(returnNew).upsert(upsert);
+    }
+
+    /*********** CRUD METHODS ***********/
 
     //Create New Checklist | Returns Checklist Created
     public Checklist createChecklist(String userId, String title) {
-        String listId = NanoIdUtils.randomNanoId(random, alphabet, 5); //Create New Public Id
+        String listId = publicId(5);
         Checklist checklist = repository.insert(new Checklist(listId, title)); //New Checklist 
 
-        mongoTemplate.update(Student.class)
-            .matching(Criteria.where("userId").is(userId))
-            .apply(new Update().push("checklists").value(checklist))
-            .first();
+        mongoTemplate.findAndModify(
+                query("userId", userId), 
+                pushUpdate("checklists", checklist), 
+                options(true, true), 
+                Student.class);
 
         return checklist;
     }
 
     //Modify Existing Checklist | Returns Modified Checklist
     public Checklist modifyChecklist(String listId, String newTitle) {
-        Query query = new Query().addCriteria(Criteria.where("listId").is(listId));
-        Update updateDef = new Update().set("title", newTitle);
-        FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true); //Returns Modified Value
-
-        return mongoTemplate.findAndModify(query, updateDef, options, Checklist.class);
+        return mongoTemplate.findAndModify(
+                query("listId", listId), 
+                setUpdate("title", newTitle), 
+                options(true, true), 
+                Checklist.class);
     }
 
     //Delete Existing Checklist | Void 
     public void deleteChecklist(String listId) {
 
         //Delete Corresponding Checkpoints
-        Checklist checklist = repository.findChecklistByListId(listId).get();
+        Checklist checklist = mongoTemplate.findOne(
+                query("listId", listId), 
+                Checklist.class);
         List<Checkpoint> checkpoints = checklist.getCheckpoints(); 
         for(Checkpoint point : checkpoints) {
            pointService.deleteCheckpoint(point.getPointId());
         }
 
         //Delete Checklist
-        Query query = new Query().addCriteria(Criteria.where("listId").is(listId));
-        mongoTemplate.remove(query, Checklist.class);
+        mongoTemplate.remove(
+                query("listId", listId), 
+                Checklist.class);
     }
 
-    //Add Checkpoint to Existing Checklist
-    public Checklist createCheckpoint(String listId, String content) {
-        String pointId = NanoIdUtils.randomNanoId(random, alphabet, 5); //Create New Public Id
-        Checkpoint checkpoint = new Checkpoint(pointId, content, false, false);
-
-        Query query = new Query().addCriteria(Criteria.where("listId").is(listId));
-        Update updateDef = new Update().push("checkpoints").value(checkpoint);
-        FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true); //Returns Modified Value
-
-        return mongoTemplate.findAndModify(query, updateDef, options, Checklist.class);
-    }
-
-    //DONT FORGET TO LIMIT CHECKPOINT TO 50 PER CHECKLIST
-    //Add Checkpoint to an existing Checklist
-    public Checklist addCheckpoint(String listId, String content) {
-        String pubId = NanoIdUtils.randomNanoId(random, alphabet, 5); //Create New Public Id
-        
-        //Create Checkpoint
-        Checkpoint checkpoint = new Checkpoint(pubId, content, false, false);
-
-        Query query = new Query().addCriteria(Criteria.where("listId").is(listId));
-        Update updateDef = new Update().push("toComplete").value(checkpoint);
-        FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true); //Returns Modified Value
-
-        return mongoTemplate.findAndModify(query, updateDef, options, Checklist.class);
-    }
 }
