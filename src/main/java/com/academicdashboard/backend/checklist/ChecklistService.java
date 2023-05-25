@@ -1,6 +1,7 @@
 package com.academicdashboard.backend.checklist;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,10 +48,6 @@ public class ChecklistService {
         return new Update().push(field).value(checklist);
     }
 
-    private static Update pullUpdate(String field, Checklist checklist) {
-        return new Update().pull(field, checklist); 
-    }
-
     /*********** OPTION DEFINITION METHOD ***********/
     private static FindAndModifyOptions options(boolean returnNew, boolean upsert) {
         return new FindAndModifyOptions().returnNew(returnNew).upsert(upsert);
@@ -73,30 +70,35 @@ public class ChecklistService {
     }
 
     //Modify Existing Checklist | Returns Modified Checklist
-    public Checklist modifyChecklist(String listId, String newTitle) {
-        return mongoTemplate.findAndModify(
-                query("listId", listId), 
-                setUpdate("title", newTitle), 
-                options(true, true), 
-                Checklist.class);
+    public Optional<Checklist> modifyChecklist(String listId, String newTitle) {
+        return Optional.ofNullable(
+                mongoTemplate.findAndModify(
+                        query("listId", listId), 
+                        setUpdate("title", newTitle), 
+                        options(true, true), 
+                        Checklist.class));
     }
 
     //Delete Existing Checklist | Void 
     public void deleteChecklist(String listId) {
 
         //Delete Corresponding Checkpoints
-        Checklist checklist = mongoTemplate.findOne(
-                query("listId", listId), 
-                Checklist.class);
-        List<Checkpoint> checkpoints = checklist.getCheckpoints(); 
-        for(Checkpoint point : checkpoints) {
-           pointService.deleteCheckpoint(point.getPointId());
-        }
+        Optional<Checklist> checklist = Optional.ofNullable(
+                mongoTemplate.findOne(
+                        query("listId", listId), 
+                        Checklist.class));
 
-        //Delete Checklist
-        mongoTemplate.remove(
-                query("listId", listId), 
-                Checklist.class);
+        if(checklist.isPresent()) {
+            List<Checkpoint> checkpoints = checklist.get().getCheckpoints(); 
+            for(Checkpoint point : checkpoints) {
+               pointService.deleteCheckpoint(point.getPointId());
+            }
+
+            //Delete Checklist
+            mongoTemplate.remove(
+                    query("listId", listId), 
+                    Checklist.class);
+        }
     }
 
 }

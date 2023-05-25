@@ -1,12 +1,14 @@
 package com.academicdashboard.backend.checklist;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +22,7 @@ public class ChecklistController {
     private ChecklistService service;
 
     //Create New Checklist | Returns Checklist Created
-    @PutMapping("/new/{userId}")
+    @PostMapping("/new/{userId}")
     public ResponseEntity<Checklist> createChecklist(
             @RequestBody Map<String, String> payload, 
             @PathVariable String userId) {
@@ -35,16 +37,16 @@ public class ChecklistController {
 
     //Modify Existing Checklist | Returns Modified Checklist
     @PutMapping("/modify/{listId}")
-    public ResponseEntity<Checklist> modifyChecklist(
+    public ResponseEntity<Optional<Checklist>> modifyChecklist(
             @RequestBody Map<String, String> payload,
             @PathVariable String listId) {
 
-        return new ResponseEntity<Checklist>(
+        return new ResponseEntity<Optional<Checklist>>(
             service.modifyChecklist(
                     listId,
                     payload.get("title")
                 ),
-                HttpStatus.CREATED);
+                HttpStatus.OK);
     }
 
     //Delete Existing Checklist | Returns Status Code 204
@@ -56,17 +58,4 @@ public class ChecklistController {
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 
-    //Add Checkpoint | Returns Checklist
-    @PutMapping("/new/checkpoint/{listId}")
-    public ResponseEntity<Checklist> createCheckpoint(
-            @RequestBody Map<String, String> payload, 
-            @PathVariable String listId) {
-
-        return new ResponseEntity<Checklist>(
-                service.createCheckpoint(
-                    listId, 
-                    payload.get("content")
-                ), 
-                HttpStatus.CREATED);
-    }
 }

@@ -1,5 +1,6 @@
 package com.academicdashboard.backend.checklist;
 
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,12 +67,13 @@ public class CheckpointService {
     }
 
     //Modify Existing Checkpoint | Returns Modified Checkpoint
-    public Checkpoint modifyCheckpoint(String pointId, String content) {
-        return mongoTemplate.findAndModify(
-                query("pointId",pointId), 
-                setUpdate("content", content), 
-                options(true, true), 
-                Checkpoint.class);
+    public Optional<Checkpoint> modifyCheckpoint(String pointId, String content) {
+        return Optional.ofNullable(
+                mongoTemplate.findAndModify(
+                        query("pointId",pointId), 
+                        setUpdate("content", content), 
+                        options(true, true), 
+                        Checkpoint.class));
     }
 
     //Delete Checkpoint | Void
@@ -82,76 +84,108 @@ public class CheckpointService {
     }
 
     //Existing Checkpoint to Subcheckpoint | Return Checkpoint w/ Subpoints
-    public Checkpoint makeSubcheckpoint(String listId, String pointId, String subpointId) {
+    public Optional<Checkpoint> makeSubcheckpoint(String listId, String pointId, String subpointId) {
 
         //Get Existing Checkpoint to make into Subcheckpoint
-        Checkpoint subpoint = mongoTemplate.findOne(
-                query("pointId", subpointId), 
-                Checkpoint.class);
+        Optional<Checkpoint> subpoint = Optional.ofNullable(
+                mongoTemplate.findOne(
+                        query("pointId", subpointId), 
+                        Checkpoint.class));
 
-        //Remove from Checklist's checkpoints atrribute
-        mongoTemplate.findAndModify(
-                query("listId", listId), 
-                pullUpdate("checkpoints", subpoint), 
-                Checklist.class);
+        if(subpoint.isPresent()){
 
-        //Add SubCheckpoint to Checkpoint
-        return mongoTemplate.findAndModify(
-                query("pointId", pointId), 
-                pushUpdate("subCheckpoints", subpoint), 
-                options(true, true), 
-                Checkpoint.class);
+            //Remove from Checklist's checkpoints atrribute
+            mongoTemplate.findAndModify(
+                    query("listId", listId), 
+                    pullUpdate("checkpoints", subpoint.get()), 
+                    Checklist.class);
+
+            //Add SubCheckpoint to Checkpoint
+            return Optional.ofNullable(
+                    mongoTemplate.findAndModify(
+                            query("pointId", pointId), 
+                            pushUpdate("subCheckpoints", subpoint.get()), 
+                            options(true, true), 
+                            Checkpoint.class));
+        } else {
+            return Optional.ofNullable(null);
+        }
     }
     
     //Create New SubCheckpoint under Checkpoint | Return Checkpoint
-    public Checkpoint newSubcheckpoint(String pointId, String content) {
+    public Optional<Checkpoint> newSubcheckpoint(String pointId, String content) {
+        //Does Parent Checkpoint Exist?
+        Optional<Checkpoint> parent = Optional.ofNullable(
+                mongoTemplate.findOne(
+                    query("pointId", pointId), 
+                    Checkpoint.class));
 
-        //Create New Checkpoint Object as Subcheckpoint
-        String subpointId = publicId(5);
-        Checkpoint subcheckpoint = repository.insert(new Checkpoint(subpointId, content, false, false));
+        if(parent.isPresent()) {
+            //Create New Checkpoint Object as Subcheckpoint
+            String subpointId = publicId(5);
+            Checkpoint subcheckpoint = repository.insert(new Checkpoint(subpointId, content, false, false));
 
-        //Add Subcheckpoint to Checkpoint
-        return mongoTemplate.findAndModify(
-                query("pointId", pointId), 
-                pushUpdate("subCheckpoints", subcheckpoint), 
-                options(true, true), 
-                Checkpoint.class);
+            //Add Subcheckpoint to Checkpoint
+            return Optional.ofNullable(
+                    mongoTemplate.findAndModify(
+                            query("pointId", pointId), 
+                            pushUpdate("subCheckpoints", subcheckpoint), 
+                            options(true, true), 
+                            Checkpoint.class));
+        } else {
+            return Optional.ofNullable(null);
+        }
     }
 
     //Subcheckpoint to Checkpoint | Return Checklist
-    public Checklist reverseSubcheckpoint(String listId, String pointId, String subpointId) {
+    public Optional<Checklist> reverseSubcheckpoint(String listId, String pointId, String subpointId) {
         
-        //Get Existing Checkpoint to make into Subcheckpoint
-        Checkpoint subpoint = mongoTemplate.findOne(
-                query("pointId", subpointId), 
-                Checkpoint.class);
+        //Get Existing SubCheckpoint
+        Optional<Checkpoint> subpoint = Optional.ofNullable(
+            mongoTemplate.findOne(
+                    query("pointId", subpointId), 
+                    Checkpoint.class));
 
-        //Remove from Checkpoint's checkpoints atrribute
-        mongoTemplate.findAndModify(
-                query("pointId", pointId), 
-                pullUpdate("subCheckpoints", subpoint), 
-                Checklist.class);
+        if(subpoint.isPresent()) {
 
-        //Add SubCheckpoint back to Checklist
-        return mongoTemplate.findAndModify(
-                query("listId", listId), 
-                pushUpdate("checkpoints", subpoint), 
-                options(true, true), 
-                Checklist.class);
+            //Remove from Checkpoint's checkpoints atrribute
+            mongoTemplate.findAndModify(
+                    query("pointId", pointId), 
+                    pullUpdate("subCheckpoints", subpoint.get()), 
+                    Checklist.class);
+
+            //Add SubCheckpoint back to Checklist
+            return Optional.ofNullable(
+                    mongoTemplate.findAndModify(
+                            query("listId", listId), 
+                            pushUpdate("checkpoints", subpoint.get()), 
+                            options(true, true), 
+                            Checklist.class));
+        } else {
+            return Optional.ofNullable(null);
+        }
+
     }
 
     //Check off Complete Property on Checkpoint | Return Checkpoint
-    public Checkpoint completeCheckpoint(String pointId) {
+    public Optional<Checkpoint> completeCheckpoint(String pointId) {
         Query query = query("pointId", pointId);
-        Checkpoint checkpoint = mongoTemplate.findOne(
-                query, 
-                Checkpoint.class);
+        Optional<Checkpoint> checkpoint = Optional.ofNullable(
+                mongoTemplate.findOne(
+                        query, 
+                        Checkpoint.class));
 
-        return mongoTemplate.findAndModify(
-                query, 
-                new Update().set("isComplete", !checkpoint.isComplete()), 
-                options(true, true), 
-                Checkpoint.class);
+        if(checkpoint.isPresent()) {
+            return Optional.ofNullable(
+                    mongoTemplate.findAndModify(
+                            query, 
+                            new Update().set("isComplete", !checkpoint.get().isComplete()), 
+                            options(true, true), 
+                            Checkpoint.class));
+        } else {
+            return Optional.ofNullable(null);
+        }
+
     }
 
 }

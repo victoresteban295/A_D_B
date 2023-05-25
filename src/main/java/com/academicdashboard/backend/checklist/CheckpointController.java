@@ -1,12 +1,14 @@
 package com.academicdashboard.backend.checklist;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +22,7 @@ public class CheckpointController {
     private CheckpointService service;
 
     //Create New Checkpoint Into Existing Checklist | Returns Checklist
-    @PutMapping("/new/{listId}")
+    @PostMapping("/new/{listId}")
     public ResponseEntity<Checklist> addCheckpoint(
             @RequestBody Map<String, String> payload,
             @PathVariable String listId) {
@@ -33,16 +35,16 @@ public class CheckpointController {
 
     //Modify Existing Checkpoint | Returns Modified Checkpoint
     @PutMapping("/modify/{pointId}")
-    public ResponseEntity<Checkpoint> modifyCheckpoint(
+    public ResponseEntity<Optional<Checkpoint>> modifyCheckpoint(
             @RequestBody Map<String, String> payload, 
             @PathVariable String pointId) {
 
-        return new ResponseEntity<Checkpoint>(
+        return new ResponseEntity<Optional<Checkpoint>>(
                 service.modifyCheckpoint(
                     pointId, 
                     payload.get("content")
                 ),
-                HttpStatus.CREATED);
+                HttpStatus.OK);
     }
 
     //Delete Checkpoint | Void
@@ -56,56 +58,56 @@ public class CheckpointController {
 
     //Existing Checkpoint to Subcheckpoint | Return Checkpoint w/ Subpoints
     @PutMapping("/make/subpoint/{listId}")
-    public ResponseEntity<Checkpoint> makeSubcheckpoint(
+    public ResponseEntity<Optional<Checkpoint>> makeSubcheckpoint(
             @RequestBody Map<String, String> payload, 
             @PathVariable String listId) {
 
-       return new ResponseEntity<Checkpoint>(
+       return new ResponseEntity<Optional<Checkpoint>>(
                 service.makeSubcheckpoint(
                    listId, 
                    payload.get("pointId"),
                    payload.get("subpointId")
                 ), 
-               HttpStatus.CREATED);
+               HttpStatus.OK);
     }
 
     //Create New SubCheckpoint under Checkpoint | Return Checkpoint
     @PutMapping("/new/subpoint/{pointId}")
-    public ResponseEntity<Checkpoint> newSubcheckpoint(
+    public ResponseEntity<Optional<Checkpoint>> newSubcheckpoint(
             @RequestBody Map<String, String> payload, 
             @PathVariable String pointId) {
 
-        return new ResponseEntity<Checkpoint>(
+        return new ResponseEntity<Optional<Checkpoint>>(
                 service.newSubcheckpoint(
                     pointId, 
                     payload.get("content")
                 ), 
-                HttpStatus.CREATED);
+                HttpStatus.OK);
     }
 
     //Subcheckpoint to Checkpoint | Return Checklist
     @PutMapping("/reverse/subpoint/{listId}")
-    public ResponseEntity<Checklist> reverseSubcheckpoint(
+    public ResponseEntity<Optional<Checklist>> reverseSubcheckpoint(
             @RequestBody Map<String, String> payload, 
             @PathVariable String listId) {
 
-        return new ResponseEntity<Checklist>(
+        return new ResponseEntity<Optional<Checklist>>(
                 service.reverseSubcheckpoint(
                     listId, 
                     payload.get("pointId"),
                     payload.get("subpointId")
                 ), 
-                HttpStatus.CREATED);
+                HttpStatus.OK);
     }
 
     //Check off Complete Property on Checkpoint | Return Checkpoint
     @PutMapping("/complete/{pointId}")
-    public ResponseEntity<Checkpoint> completeCheckpoint(
+    public ResponseEntity<Optional<Checkpoint>> completeCheckpoint(
             @PathVariable String pointId) {
 
-        return new ResponseEntity<Checkpoint>(
+        return new ResponseEntity<Optional<Checkpoint>>(
                 service.completeCheckpoint(pointId), 
-                HttpStatus.CREATED);
+                HttpStatus.OK);
     }
 
 }
