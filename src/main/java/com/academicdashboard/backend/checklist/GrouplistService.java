@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import com.academicdashboard.backend.exception.ApiRequestException;
 import com.academicdashboard.backend.student.Student;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
@@ -73,17 +74,18 @@ public class GrouplistService {
     }
 
     //Modify Existing Grouplist | Returns Modified Grouplist
-    public Optional<Grouplist> modifyGrouplist(String groupId, String newTitle) {
+    public Grouplist modifyGrouplist(String groupId, String newTitle) {
         return Optional.ofNullable(
                 mongoTemplate.findAndModify(
                     query("groupId", groupId), 
                     setUpdate("title", newTitle), 
                     options(true, true), 
-                    Grouplist.class));
+                    Grouplist.class))
+            .orElseThrow(() -> new ApiRequestException("Grouplist Doesn't Exist"));
     }
 
     //Add New Checklist to Grouplist | Returns Grouplist
-    public Optional<Grouplist> addNewToGrouplist(String groupId, String listTitle) {
+    public Grouplist addNewToGrouplist(String groupId, String listTitle) {
         String listId = publicId(5);
         Checklist checklist = checklistRepo.insert(new Checklist(listId, listTitle)); //Make sure no Duplicates
 
@@ -92,72 +94,69 @@ public class GrouplistService {
                     query("groupId", groupId), 
                     pushUpdate("checklists", checklist), 
                     options(true, true), 
-                    Grouplist.class));
+                    Grouplist.class))
+            .orElseThrow(() -> new ApiRequestException("Grouplist Doesn't Exist"));
     }
 
     //Add Existing Checklist to Grouplist | Returns Grouplist
-    public Optional<Grouplist> addExistToGrouplist(String userId, String groupId, String listId) {
+    public Grouplist addExistToGrouplist(String userId, String groupId, String listId) {
         //Find Existing Checklist
-        Optional<Checklist> checklist = Optional.ofNullable(
+        Checklist checklist = Optional.ofNullable(
                 mongoTemplate.findOne(
                     query("listId", listId), 
-                    Checklist.class));
+                    Checklist.class))
+            .orElseThrow(() -> new ApiRequestException("Checklist Doesn't Exist"));
 
-        if(checklist.isPresent()) {
             //Remove Checklist Obj Reference from the User's checklists attribute
             mongoTemplate.findAndModify(
                     query("userId", userId), 
-                    pullUpdate("checklists", checklist.get()), 
+                    pullUpdate("checklists", checklist), 
                     Student.class);
 
             //Add Same Checklist Obj Reference to Grouplist's checklists attribute
             return Optional.ofNullable(
                     mongoTemplate.findAndModify(
                         query("groupId", groupId), 
-                        pushUpdate("checklists", checklist.get()), 
+                        pushUpdate("checklists", checklist), 
                         options(true, true), 
-                        Grouplist.class));
-        } else {
-            return Optional.ofNullable(null);
-        }
+                        Grouplist.class))
+                .orElseThrow(() -> new ApiRequestException("Grouplist Doesn't Exist"));
     }
 
     //Remove Existing Checklist From Grouplist | Returns Modified Grouplist
-    public Optional<Grouplist> removefromGrouplist(String userId, String groupId, String listId) {
+    public Grouplist removefromGrouplist(String userId, String groupId, String listId) {
         //Find Existing Checklist
-        Optional<Checklist> checklist = Optional.ofNullable(
+        Checklist checklist = Optional.ofNullable(
                 mongoTemplate.findOne(
                     query("listId", listId), 
-                    Checklist.class));
+                    Checklist.class))
+            .orElseThrow(() -> new ApiRequestException("Checklist Doesn't Exist"));
 
-        if(checklist.isPresent()) {
             //Add Checklist Obj Reference back to User's checklists attribute
             mongoTemplate.findAndModify(
                     query("userId", userId), 
-                    pushUpdate("checklists", checklist.get()), 
+                    pushUpdate("checklists", checklist), 
                     Student.class);
 
             //Remove Checklist Obj Reference from Grouplist's checklists attribute
             return Optional.ofNullable(
                     mongoTemplate.findAndModify(
                             query("groupId", groupId), 
-                            pullUpdate("checklists", checklist.get()), 
+                            pullUpdate("checklists", checklist), 
                             options(true, true), 
-                            Grouplist.class));
-        } else {
-            return Optional.ofNullable(null);
-        }
+                            Grouplist.class))
+                .orElseThrow(() -> new ApiRequestException("Grouplist Doesn't Exist"));
     }
 
     //Delete Grouplist | Void
     public void deleteGrouplist(String userId, String groupId, boolean deleteAll) {
-        Optional<Grouplist> grouplist = Optional.ofNullable(
+        Grouplist grouplist = Optional.ofNullable(
                 mongoTemplate.findOne(
                     query("groupId", groupId), 
-                    Grouplist.class));
+                    Grouplist.class))
+            .orElseThrow(() -> new ApiRequestException("Grouplist Doesn't Exist"));
 
-        if(grouplist.isPresent()) {
-            List<Checklist> checklists = grouplist.get().getChecklists(); //Checklist Under Grouplist
+            List<Checklist> checklists = grouplist.getChecklists(); //Checklist Under Grouplist
 
             if (deleteAll) {
                 //Deleting Completely All Checklist Found within Deleted Grouplist
@@ -180,7 +179,5 @@ public class GrouplistService {
             mongoTemplate.remove(
                     query("groupId", groupId), 
                     Grouplist.class);
-        }
     }
-
 }

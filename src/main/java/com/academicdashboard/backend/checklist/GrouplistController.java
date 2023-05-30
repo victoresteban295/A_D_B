@@ -37,11 +37,11 @@ public class GrouplistController {
 
     //Modify Existing Grouplist | Returns Modified Grouplist
     @PutMapping("/modify/{groupId}")
-    public ResponseEntity<Optional<Grouplist>> modifyGrouplist(
+    public ResponseEntity<Grouplist> modifyGrouplist(
             @RequestBody Map<String, String> payload,
             @PathVariable String groupId) {
 
-        return new ResponseEntity<Optional<Grouplist>>(
+        return new ResponseEntity<Grouplist>(
             service.modifyGrouplist(
                     groupId,
                     payload.get("title")
@@ -51,11 +51,11 @@ public class GrouplistController {
 
     //Add New Checklist to Grouplist | Returns Grouplist
     @PutMapping("/addnew/{groupId}")
-    public ResponseEntity<Optional<Grouplist>> addNewToGrouplist(
+    public ResponseEntity<Grouplist> addNewToGrouplist(
             @RequestBody Map<String, String> payload,
             @PathVariable String groupId) {
 
-        return new ResponseEntity<Optional<Grouplist>>(
+        return new ResponseEntity<Grouplist>(
             service.addNewToGrouplist(
                 groupId,
                 payload.get("title")
@@ -65,11 +65,11 @@ public class GrouplistController {
 
     //Add Existing Checklist to Grouplist | Returns Grouplist
     @PutMapping("/addexist/{userId}")
-    public ResponseEntity<Optional<Grouplist>> addExistToGrouplist(
+    public ResponseEntity<Grouplist> addExistToGrouplist(
             @RequestBody Map<String, String> payload,
             @PathVariable String userId) {
 
-        return new ResponseEntity<Optional<Grouplist>>(
+        return new ResponseEntity<Grouplist>(
             service.addExistToGrouplist(
                 userId, 
                 payload.get("groupId"), 
@@ -80,11 +80,11 @@ public class GrouplistController {
 
     //Remove Existing Checklist From Grouplist | Returns Modified Grouplist
     @PutMapping("/removefrom/{userId}")
-    public ResponseEntity<Optional<Grouplist>> removefromGrouplist(
+    public ResponseEntity<Grouplist> removefromGrouplist(
             @RequestBody Map<String, String> payload,
             @PathVariable String userId) {
 
-        return new ResponseEntity<Optional<Grouplist>>(
+        return new ResponseEntity<Grouplist>(
             service.removefromGrouplist(
                 userId, 
                 payload.get("groupId"), 
