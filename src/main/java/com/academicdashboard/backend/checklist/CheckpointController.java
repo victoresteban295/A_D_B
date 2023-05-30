@@ -35,11 +35,11 @@ public class CheckpointController {
 
     //Modify Existing Checkpoint | Returns Modified Checkpoint
     @PutMapping("/modify/{pointId}")
-    public ResponseEntity<Optional<Checkpoint>> modifyCheckpoint(
+    public ResponseEntity<Checkpoint> modifyCheckpoint(
             @RequestBody Map<String, String> payload, 
             @PathVariable String pointId) {
 
-        return new ResponseEntity<Optional<Checkpoint>>(
+        return new ResponseEntity<Checkpoint>(
                 service.modifyCheckpoint(
                     pointId, 
                     payload.get("content")
@@ -58,12 +58,12 @@ public class CheckpointController {
 
     //Existing Checkpoint to Subcheckpoint | Return Checkpoint w/ Subpoints
     @PutMapping("/make/subpoint/{listId}")
-    public ResponseEntity<Optional<Checkpoint>> makeSubcheckpoint(
+    public ResponseEntity<Checkpoint> turnIntoSubcheckpoint(
             @RequestBody Map<String, String> payload, 
             @PathVariable String listId) {
 
-       return new ResponseEntity<Optional<Checkpoint>>(
-                service.makeSubcheckpoint(
+       return new ResponseEntity<Checkpoint>(
+                service.turnIntoSubcheckpoint(
                    listId, 
                    payload.get("pointId"),
                    payload.get("subpointId")
@@ -73,11 +73,11 @@ public class CheckpointController {
 
     //Create New SubCheckpoint under Checkpoint | Return Checkpoint
     @PutMapping("/new/subpoint/{pointId}")
-    public ResponseEntity<Optional<Checkpoint>> newSubcheckpoint(
+    public ResponseEntity<Checkpoint> newSubcheckpoint(
             @RequestBody Map<String, String> payload, 
             @PathVariable String pointId) {
 
-        return new ResponseEntity<Optional<Checkpoint>>(
+        return new ResponseEntity<Checkpoint>(
                 service.newSubcheckpoint(
                     pointId, 
                     payload.get("content")
@@ -87,11 +87,11 @@ public class CheckpointController {
 
     //Subcheckpoint to Checkpoint | Return Checklist
     @PutMapping("/reverse/subpoint/{listId}")
-    public ResponseEntity<Optional<Checklist>> reverseSubcheckpoint(
+    public ResponseEntity<Checklist> reverseSubcheckpoint(
             @RequestBody Map<String, String> payload, 
             @PathVariable String listId) {
 
-        return new ResponseEntity<Optional<Checklist>>(
+        return new ResponseEntity<Checklist>(
                 service.reverseSubcheckpoint(
                     listId, 
                     payload.get("pointId"),
@@ -102,10 +102,10 @@ public class CheckpointController {
 
     //Check off Complete Property on Checkpoint | Return Checkpoint
     @PutMapping("/complete/{pointId}")
-    public ResponseEntity<Optional<Checkpoint>> completeCheckpoint(
+    public ResponseEntity<Checkpoint> completeCheckpoint(
             @PathVariable String pointId) {
 
-        return new ResponseEntity<Optional<Checkpoint>>(
+        return new ResponseEntity<Checkpoint>(
                 service.completeCheckpoint(pointId), 
                 HttpStatus.OK);
     }

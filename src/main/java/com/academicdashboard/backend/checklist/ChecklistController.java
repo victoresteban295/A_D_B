@@ -1,7 +1,6 @@
 package com.academicdashboard.backend.checklist;
 
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,11 +36,11 @@ public class ChecklistController {
 
     //Modify Existing Checklist | Returns Modified Checklist
     @PutMapping("/modify/{listId}")
-    public ResponseEntity<Optional<Checklist>> modifyChecklist(
+    public ResponseEntity<Checklist> modifyChecklist(
             @RequestBody Map<String, String> payload,
             @PathVariable String listId) {
 
-        return new ResponseEntity<Optional<Checklist>>(
+        return new ResponseEntity<Checklist>(
             service.modifyChecklist(
                     listId,
                     payload.get("title")
