@@ -16,7 +16,10 @@ import com.academicdashboard.backend.exception.ApiRequestException;
 import com.academicdashboard.backend.student.Student;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class ChecklistService {
 
     @Autowired
