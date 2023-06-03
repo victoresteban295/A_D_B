@@ -81,7 +81,7 @@ public class ChecklistService {
                         setUpdate("title", newTitle), 
                         options(true, true), 
                         Checklist.class))
-            .orElseThrow(() -> new ApiRequestException("Checklist Doesn't Exist"));
+            .orElseThrow(() -> new ApiRequestException("Checklist You Wanted to Modify Doesn't Exist"));
     }
 
     //Delete Existing Checklist | Void 
@@ -92,7 +92,7 @@ public class ChecklistService {
                 mongoTemplate.findOne(
                         query("listId", listId), 
                         Checklist.class))
-            .orElseThrow(() -> new ApiRequestException("Checklist Doesn't Exist"));
+            .orElseThrow(() -> new ApiRequestException("Checklist You Wanted to Delete Doesn't Exist"));
 
         List<Checkpoint> checkpoints = checklist.getCheckpoints(); 
         for(Checkpoint point : checkpoints) {

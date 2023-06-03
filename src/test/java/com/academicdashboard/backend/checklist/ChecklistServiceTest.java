@@ -13,7 +13,15 @@ import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+
+import com.academicdashboard.backend.exception.ApiRequestException;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.assertj.core.api.Assertions;
 
 @ExtendWith(MockitoExtension.class)
 public class ChecklistServiceTest {
@@ -64,11 +72,9 @@ public class ChecklistServiceTest {
     }
 
     @Test
-    @DisplayName("Should Replace Checklist's Old Title with New Title")
+    @DisplayName("Should Return Modified Checklist")
     @SuppressWarnings("unchecked")
     public void modifyExistingChecklistTitle() {
-        String listId = "testId";
-        String title = "newTitle";
         Checklist expectedValue = new Checklist("testId", "newTitle");
 
         //Given 
@@ -76,33 +82,79 @@ public class ChecklistServiceTest {
                     ArgumentMatchers.any(Query.class),
                     ArgumentMatchers.any(Update.class),
                     ArgumentMatchers.any(FindAndModifyOptions.class),
-                    ArgumentMatchers.any(Class.class))).thenReturn(expectedValue);
+                    ArgumentMatchers.any(Class.class))).thenReturn(new Checklist("testId", "newTitle"));
         
-
         //When
-        Checklist returnedValue = serviceUnderTest.modifyChecklist(listId, title);
+        Checklist returnedValue = serviceUnderTest.modifyChecklist("testId", "newTitle");
 
         //Then
-        assertThat(returnedValue.getTitle()).isEqualTo(expectedValue.getTitle());
+        assertThat(returnedValue).isEqualTo(expectedValue);
+    }
+
+    @Test
+    @DisplayName("Should Throw ApiRequestException When Modifying Non-existent Checklist")
+    @SuppressWarnings("unchecked")
+    public void throwExceptionNonexistentChecklist() {
+
+        //Given 
+        Mockito.when(mongoTemplate.findAndModify(
+                    ArgumentMatchers.any(Query.class),
+                    ArgumentMatchers.any(Update.class),
+                    ArgumentMatchers.any(FindAndModifyOptions.class),
+                    ArgumentMatchers.any(Class.class))).thenReturn(null);
+
+        //Then
+        Assertions.assertThatThrownBy(() -> {
+            serviceUnderTest.modifyChecklist("testId", "title");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Checklist You Wanted to Modify Doesn't Exist");
+    }
+
+    @Test
+    @DisplayName("Should Delete Existing Checklist")
+    @SuppressWarnings("unchecked")
+    public void deleteExistingChecklist() {
+        Checklist checklist = new Checklist("listId", "title");
+        List<Checkpoint> checkpoints = new ArrayList<>();
+        checkpoints.add(new Checkpoint("id1", "content01", false, false));
+        checkpoints.add(new Checkpoint("id2", "content02", false, false));
+        checklist.setCheckpoints(checkpoints);
+
+        //Given
+        Mockito.when(mongoTemplate.findOne(
+                    ArgumentMatchers.any(Query.class),
+                    ArgumentMatchers.any(Class.class)))
+            .thenReturn(checklist);
+
+        //When 
+        serviceUnderTest.deleteChecklist("listId");
+
+        //Given
+        //Verify that checkpoints are being passsed to deleteCheckpoint to get deleted
+        Mockito.verify(checkpointService, Mockito.times(checkpoints.size()))
+            .deleteCheckpoint(ArgumentMatchers.anyString());
+
+        Mockito.verify(mongoTemplate, Mockito.times(1))
+            .remove(ArgumentMatchers.any(Query.class), ArgumentMatchers.any(Class.class));
 
     }
 
-    // @Test
-    // @DisplayName("Should Throw ApiRequestException When Modifying Non-existent Checklist")
-    // public void throwExceptionNonexistentChecklist() {
-    //
-    // }
+    @Test
+    @DisplayName("Should Throw ApiRequestException When Deleting Non-existent Checklist")
+    @SuppressWarnings("unchecked")
+    public void throwExceptionDeletingChecklist() {
+        
+        //Given
+        Mockito.when(mongoTemplate.findOne(
+                    ArgumentMatchers.any(Query.class),
+                    ArgumentMatchers.any(Class.class)))
+            .thenReturn(null);
 
-    // @Test
-    // @DisplayName("Should Delete Existing Checklist")
-    // public void deleteExistingChecklist() {
-    //
-    // }
-
-    // @Test
-    // @DisplayName("Should Throw ApiRequestException When Deleting Non-existent Checklist")
-    // public void throwExceptionDeletingChecklist() {
-    //
-    // }
+        //When
+        Assertions.assertThatThrownBy(() -> {
+            serviceUnderTest.deleteChecklist("listId");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Checklist You Wanted to Delete Doesn't Exist");
+    }
 
 }
