@@ -75,13 +75,15 @@ public class ChecklistService {
 
     //Modify Existing Checklist | Returns Modified Checklist
     public Checklist modifyChecklist(String listId, String newTitle) {
-        return Optional.ofNullable(
-                mongoTemplate.findAndModify(
-                        query("listId", listId), 
-                        setUpdate("title", newTitle), 
-                        options(true, true), 
-                        Checklist.class))
-            .orElseThrow(() -> new ApiRequestException("Checklist You Wanted to Modify Doesn't Exist"));
+        if(mongoTemplate.exists(query("listId", listId), Checklist.class)) {
+            return mongoTemplate.findAndModify(
+                    query("listId", listId), 
+                    setUpdate("title", newTitle), 
+                    options(true, true), 
+                    Checklist.class);
+        } else {
+            throw new ApiRequestException("Checklist You Wanted to Modify Doesn't Exist");
+        }
     }
 
     //Delete Existing Checklist | Void 
