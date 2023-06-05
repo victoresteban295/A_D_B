@@ -23,9 +23,6 @@ import lombok.AllArgsConstructor;
 public class ChecklistService {
 
     @Autowired
-    private CheckpointService pointService;
-
-    @Autowired
     private ChecklistRepository repository;
 
     @Autowired
@@ -98,7 +95,7 @@ public class ChecklistService {
 
         List<Checkpoint> checkpoints = checklist.getCheckpoints(); 
         for(Checkpoint point : checkpoints) {
-           pointService.deleteCheckpoint(point.getPointId());
+           mongoTemplate.remove(query("pointId", point.getPointId()), Checkpoint.class);
         }
 
         //Delete Checklist

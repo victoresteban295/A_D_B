@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 import com.academicdashboard.backend.exception.ApiRequestException;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class CheckpointService {
 
     @Autowired
@@ -87,7 +90,7 @@ public class CheckpointService {
                 mongoTemplate.findOne(
                     query, 
                     Checkpoint.class))
-            .orElseThrow(() -> new ApiRequestException("Checkpoint Doesn't Exist"));
+            .orElseThrow(() -> new ApiRequestException("Checkpoint You Wanted to Delete Doesn't Exist"));
 
         //Delete Checkpoint
         mongoTemplate.remove(

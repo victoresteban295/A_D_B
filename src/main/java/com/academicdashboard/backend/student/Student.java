@@ -14,15 +14,11 @@ import com.academicdashboard.backend.course.Course;
 import com.academicdashboard.backend.reminder.ReminderList;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Document(collection = "student")
-@Getter
-@Setter
-@EqualsAndHashCode
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Student {
@@ -69,6 +65,7 @@ public class Student {
 
     //Constructor without ObjectId for PUT Endpoint Methods 
     public Student(
+            String userId,
             String firstName,
             String lastName,
             String birthMonth,
@@ -84,6 +81,7 @@ public class Student {
             String phone
         ) {
 
+        this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.birthMonth = birthMonth;
