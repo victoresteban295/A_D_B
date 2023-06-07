@@ -35,9 +35,6 @@ public class ChecklistServiceTest {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    // @Mock
-    // private CheckpointService checkpointService;
-
     @Autowired
     private ChecklistRepository checklistRepository;
 
@@ -46,7 +43,6 @@ public class ChecklistServiceTest {
     @BeforeEach
     public void setUp() {
         this.checklistService = new ChecklistService(
-                // checkpointService, 
                 checklistRepository, 
                 mongoTemplate);
     }

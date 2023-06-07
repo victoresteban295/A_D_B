@@ -16,14 +16,17 @@ import com.academicdashboard.backend.exception.ApiRequestException;
 import com.academicdashboard.backend.student.Student;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class GrouplistService {
 
     @Autowired
     private GrouplistRepository repository;
 
-    @Autowired
-    private ChecklistRepository checklistRepo;
+    // @Autowired
+    // private ChecklistRepository checklistRepo;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -75,19 +78,22 @@ public class GrouplistService {
 
     //Modify Existing Grouplist | Returns Modified Grouplist
     public Grouplist modifyGrouplist(String groupId, String newTitle) {
-        return Optional.ofNullable(
-                mongoTemplate.findAndModify(
-                    query("groupId", groupId), 
-                    setUpdate("title", newTitle), 
-                    options(true, true), 
-                    Grouplist.class))
-            .orElseThrow(() -> new ApiRequestException("Grouplist Doesn't Exist"));
+        if(mongoTemplate.exists(query("groupId", groupId), Grouplist.class)) {
+            return mongoTemplate.findAndModify(
+                query("groupId", groupId), 
+                setUpdate("title", newTitle), 
+                options(true, true), 
+                Grouplist.class);
+        } else {
+            throw new ApiRequestException("Grouplist You Wanted to Modify Doesn't Exist");
+        }
     }
 
     //Add New Checklist to Grouplist | Returns Grouplist
     public Grouplist addNewToGrouplist(String groupId, String listTitle) {
         String listId = publicId(5);
-        Checklist checklist = checklistRepo.insert(new Checklist(listId, listTitle)); //Make sure no Duplicates
+        // Checklist checklist01 = checklistRepo.insert(new Checklist(listId, listTitle)); //Make sure no Duplicates
+        Checklist checklist = mongoTemplate.insert(new Checklist(listId, listTitle));
 
         return Optional.ofNullable(
                 mongoTemplate.findAndModify(
