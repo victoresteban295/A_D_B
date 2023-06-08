@@ -3,6 +3,7 @@ package com.academicdashboard.backend.checklist;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,8 @@ public class GrouplistServiceTest {
     @AfterEach
     public void cleanup() {
         this.grouplistRepository.deleteAll();
+        mongoTemplate.dropCollection(Checklist.class);
+        mongoTemplate.createCollection(Checklist.class);
     }
 
     @Test
@@ -107,4 +110,56 @@ public class GrouplistServiceTest {
             .hasMessage("Grouplist You Wanted to Modify Doesn't Exist");
     }
 
+    @Test
+    @DisplayName("Should Create a New Checklist Under an Existing Grouplist")
+    public void createNewChecklistUnderExistingGrouplist() {
+        //Given
+        this.grouplistRepository.insert(new Grouplist("id001", "Grouplist Title01"));
+        this.grouplistRepository.insert(new Grouplist("id002", "Grouplist Title02"));
+        this.grouplistRepository.insert(new Grouplist("id003", "Grouplist Title03"));
+
+        //When 
+        grouplistService.addNewToGrouplist("id001", "Checklist Title");
+
+        //Then
+        Grouplist returnedValue = this.grouplistRepository.findGrouplistByGroupId("id001").get();
+        Assertions.assertThat(returnedValue.getChecklists().get(0).getTitle()).isEqualTo("Checklist Title");
+        Assertions.assertThat(mongoTemplate.findAll(Checklist.class).size()).isEqualTo(1); //Assert No Duplication
+    }
+
+    @Test
+    @DisplayName("Should Throw an ApiRequestException When Adding New Checklist to Non-existent Grouplist")
+    public void throwExceptionAddingNewChecklistToNonExistingGrouplist() {
+        //Given
+        this.grouplistRepository.insert(new Grouplist("id001", "Grouplist Title01"));
+        this.grouplistRepository.insert(new Grouplist("id002", "Grouplist Title02"));
+        this.grouplistRepository.insert(new Grouplist("id003", "Grouplist Title03"));
+
+        //Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.addNewToGrouplist("id004", "Checklist Title");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Grouplist You Wanted to Modify Doesn't Exist");
+    }
+
+
+    @Test
+    @DisplayName("Should Add an Existing Checklist Under an Existing Grouplist")
+    @Disabled
+    public void addExistingChecklistUnderExistingGrouplist() {
+        //Given
+        this.grouplistRepository.insert(new Grouplist("id001", "Grouplist Title01"));
+        this.grouplistRepository.insert(new Grouplist("id002", "Grouplist Title02"));
+        this.grouplistRepository.insert(new Grouplist("id003", "Grouplist Title03"));
+        Checklist checklist = new Checklist("12345", "Checklist Title");
+        mongoTemplate.insert(checklist);
+
+        //When 
+        grouplistService.addNewToGrouplist("id001", "Checklist Title");
+
+        //Then
+        Grouplist returnedValue = this.grouplistRepository.findGrouplistByGroupId("id001").get();
+        Assertions.assertThat(returnedValue.getChecklists().get(0).getTitle()).isEqualTo("Checklist Title");
+        Assertions.assertThat(mongoTemplate.findAll(Checklist.class).size()).isEqualTo(1); //Assert No Duplication
+    }
 }
