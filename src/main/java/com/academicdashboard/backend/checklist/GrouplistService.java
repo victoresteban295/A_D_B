@@ -112,7 +112,7 @@ public class GrouplistService {
                 mongoTemplate.findOne(
                     query("listId", listId), 
                     Checklist.class))
-            .orElseThrow(() -> new ApiRequestException("Checklist Doesn't Exist"));
+            .orElseThrow(() -> new ApiRequestException("Checklist You Wanted to Modify Doesn't Exist"));
 
         //Remove Checklist Obj Reference from the User's checklists attribute
         mongoTemplate.findAndModify(
@@ -120,14 +120,15 @@ public class GrouplistService {
                 pullUpdate("checklists", checklist), 
                 Student.class);
 
-        //Add Same Checklist Obj Reference to Grouplist's checklists attribute
-        return Optional.ofNullable(
-                mongoTemplate.findAndModify(
-                    query("groupId", groupId), 
-                    pushUpdate("checklists", checklist), 
-                    options(true, true), 
-                    Grouplist.class))
-            .orElseThrow(() -> new ApiRequestException("Grouplist Doesn't Exist"));
+        if(mongoTemplate.exists(query("groupId", groupId), Grouplist.class)) {
+            return mongoTemplate.findAndModify(
+                query("groupId", groupId), 
+                pushUpdate("checklists", checklist), 
+                options(true, true), 
+                Grouplist.class);
+        } else {
+            throw new ApiRequestException("Grouplist You Wanted to Modify Doesn't Exist");
+        }
     }
 
     //Remove Existing Checklist From Grouplist | Returns Modified Grouplist
@@ -137,22 +138,23 @@ public class GrouplistService {
                 mongoTemplate.findOne(
                     query("listId", listId), 
                     Checklist.class))
-            .orElseThrow(() -> new ApiRequestException("Checklist Doesn't Exist"));
+            .orElseThrow(() -> new ApiRequestException("Checklist You Wanted to Modify Doesn't Exist"));
 
-        //Add Checklist Obj Reference back to User's checklists attribute
-        mongoTemplate.findAndModify(
-                query("userId", userId), 
-                pushUpdate("checklists", checklist), 
-                Student.class);
+        if(mongoTemplate.exists(query("groupId", groupId), Grouplist.class)) {
+            //Add Checklist Obj Reference back to User's checklists attribute
+            mongoTemplate.findAndModify(
+                    query("userId", userId), 
+                    pushUpdate("checklists", checklist), 
+                    Student.class);
 
-        //Remove Checklist Obj Reference from Grouplist's checklists attribute
-        return Optional.ofNullable(
-                mongoTemplate.findAndModify(
-                        query("groupId", groupId), 
-                        pullUpdate("checklists", checklist), 
-                        options(true, true), 
-                        Grouplist.class))
-            .orElseThrow(() -> new ApiRequestException("Grouplist Doesn't Exist"));
+            return mongoTemplate.findAndModify(
+                query("groupId", groupId), 
+                pullUpdate("checklists", checklist), 
+                options(true, true), 
+                Grouplist.class);
+        } else {
+            throw new ApiRequestException("Grouplist You Wanted to Modify Doesn't Exist");
+        }
     }
 
     //Delete Grouplist | Void
