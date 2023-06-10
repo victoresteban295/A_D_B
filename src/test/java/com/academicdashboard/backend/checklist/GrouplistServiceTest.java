@@ -450,5 +450,179 @@ public class GrouplistServiceTest {
             .hasMessage("Grouplist You Wanted to Modify Doesn't Exist");
     }
 
+    @Test
+    @DisplayName("Should Delete Grouplist without Deleteing it's Checklists")
+    public void deleteGrouplistWithoutDeletingChecklists() {
+        //Given
+        Student student = new Student(
+                "123973789abjdrfklwi75", 
+                "Victor", 
+                "Benitez", 
+                "March", 19, 1998, 
+                "Albion College", 
+                "Senor", 
+                "Mathematics", "", "", 
+                "emails@email.com", 
+                "psword", 
+                "3233459856");
+
+        //Grouplist with Checklists
+        Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
+
+        //Create Different Checklists
+        Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
+        Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
+        Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
+        mongoTemplate.insert(checklist01);
+        mongoTemplate.insert(checklist02);
+        mongoTemplate.insert(checklist03);
+
+        //Add Checklist to List and Add to Grouplist
+        List<Checklist> checklists = new ArrayList<>();
+        checklists.add(checklist01);
+        checklists.add(checklist02);
+        checklists.add(checklist03);
+        grouplist01.setChecklists(checklists);
+
+        //Create Different Grouplist & Add to Repo
+        this.grouplistRepository.insert(grouplist01);
+        Grouplist grouplist02 = this.grouplistRepository
+            .insert(new Grouplist("gId02", "Grouplist Title02"));
+        Grouplist grouplist03 = this.grouplistRepository
+            .insert(new Grouplist("gId03", "Grouplist Title03"));
+
+        //Add GroupList to List
+        List<Grouplist> grouplists = new ArrayList<>();
+        grouplists.add(grouplist01);
+        grouplists.add(grouplist02);
+        grouplists.add(grouplist03);
+
+        student.setGrouplists(grouplists); //Add List<Grouplist> to Student
+        mongoTemplate.insert(student); //Add Student to Repo
+
+        //When 
+        grouplistService.deleteGrouplist("123973789abjdrfklwi75", "gId01", false);
+
+        //Then
+        Assertions.assertThat(mongoTemplate.findAll(Student.class).get(0).getChecklists().size()).isEqualTo(3);
+        Assertions.assertThat(mongoTemplate.findAll(Student.class).get(0).getGrouplists().size()).isEqualTo(2);
+        Assertions.assertThat(mongoTemplate.findAll(Checklist.class).size()).isEqualTo(3);
+    }
+
+
+    @Test
+    @DisplayName("Should Delete Grouplist And Delete it's Checklists")
+    public void deleteGrouplistAndDeleteChecklists() {
+        //Given
+        Student student = new Student(
+                "123973789abjdrfklwi75", 
+                "Victor", 
+                "Benitez", 
+                "March", 19, 1998, 
+                "Albion College", 
+                "Senor", 
+                "Mathematics", "", "", 
+                "emails@email.com", 
+                "psword", 
+                "3233459856");
+
+        //Grouplist with Checklists
+        Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
+
+        //Create Different Checklists
+        Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
+        Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
+        Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
+        mongoTemplate.insert(checklist01);
+        mongoTemplate.insert(checklist02);
+        mongoTemplate.insert(checklist03);
+
+        //Add Checklist to List and Add to Grouplist
+        List<Checklist> checklists = new ArrayList<>();
+        checklists.add(checklist01);
+        checklists.add(checklist02);
+        checklists.add(checklist03);
+        grouplist01.setChecklists(checklists);
+
+        //Create Different Grouplist & Add to Repo
+        this.grouplistRepository.insert(grouplist01);
+        Grouplist grouplist02 = this.grouplistRepository
+            .insert(new Grouplist("gId02", "Grouplist Title02"));
+        Grouplist grouplist03 = this.grouplistRepository
+            .insert(new Grouplist("gId03", "Grouplist Title03"));
+
+        //Add GroupList to List
+        List<Grouplist> grouplists = new ArrayList<>();
+        grouplists.add(grouplist01);
+        grouplists.add(grouplist02);
+        grouplists.add(grouplist03);
+
+        student.setGrouplists(grouplists); //Add List<Grouplist> to Student
+        mongoTemplate.insert(student); //Add Student to Repo
+
+        //When 
+        grouplistService.deleteGrouplist("123973789abjdrfklwi75", "gId01", true);
+
+        //Then
+        Assertions.assertThat(mongoTemplate.findAll(Student.class).get(0).getChecklists().size()).isEqualTo(0);
+        Assertions.assertThat(mongoTemplate.findAll(Student.class).get(0).getGrouplists().size()).isEqualTo(2);
+        Assertions.assertThat(mongoTemplate.findAll(Checklist.class).size()).isEqualTo(0);
+    }
     
+    @Test
+    @DisplayName("Should Throw Exception When Deleting Non-Existent Grouplist")
+    public void throwExceptionDeletingNonExistentGrouplist() {
+        //Given
+        Student student = new Student(
+                "123973789abjdrfklwi75", 
+                "Victor", 
+                "Benitez", 
+                "March", 19, 1998, 
+                "Albion College", 
+                "Senor", 
+                "Mathematics", "", "", 
+                "emails@email.com", 
+                "psword", 
+                "3233459856");
+
+        //Grouplist with Checklists
+        Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
+
+        //Create Different Checklists
+        Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
+        Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
+        Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
+        mongoTemplate.insert(checklist01);
+        mongoTemplate.insert(checklist02);
+        mongoTemplate.insert(checklist03);
+
+        //Add Checklist to List and Add to Grouplist
+        List<Checklist> checklists = new ArrayList<>();
+        checklists.add(checklist01);
+        checklists.add(checklist02);
+        checklists.add(checklist03);
+        grouplist01.setChecklists(checklists);
+
+        //Create Different Grouplist & Add to Repo
+        this.grouplistRepository.insert(grouplist01);
+        Grouplist grouplist02 = this.grouplistRepository
+            .insert(new Grouplist("gId02", "Grouplist Title02"));
+        Grouplist grouplist03 = this.grouplistRepository
+            .insert(new Grouplist("gId03", "Grouplist Title03"));
+
+        //Add GroupList to List
+        List<Grouplist> grouplists = new ArrayList<>();
+        grouplists.add(grouplist01);
+        grouplists.add(grouplist02);
+        grouplists.add(grouplist03);
+
+        student.setGrouplists(grouplists); //Add List<Grouplist> to Student
+        mongoTemplate.insert(student); //Add Student to Repo
+
+        //Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.deleteGrouplist("123973789abjdrfklwi75", "gId04", true);
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Grouplist You Wanted to Delete Doesn't Exist");
+    }
 }

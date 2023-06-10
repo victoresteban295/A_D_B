@@ -163,7 +163,7 @@ public class GrouplistService {
                 mongoTemplate.findOne(
                     query("groupId", groupId), 
                     Grouplist.class))
-            .orElseThrow(() -> new ApiRequestException("Grouplist Doesn't Exist"));
+            .orElseThrow(() -> new ApiRequestException("Grouplist You Wanted to Delete Doesn't Exist"));
 
         List<Checklist> checklists = grouplist.getChecklists(); //Checklist Under Grouplist
 
@@ -179,7 +179,7 @@ public class GrouplistService {
             for(Checklist list : checklists) {
                 mongoTemplate.findAndModify(
                         query("userId", userId), 
-                        pushUpdate("checklist", list), 
+                        pushUpdate("checklists", list), 
                         Student.class);
             }
         }
