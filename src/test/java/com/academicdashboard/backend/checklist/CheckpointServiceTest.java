@@ -328,7 +328,7 @@ public class CheckpointServiceTest {
 
         //When 
         checkpointService.reverseSubcheckpoint("listId01", "pointId01", "pointId02");
-        
+
         //Then
         Assertions.assertThat(mongoTemplate.findAll(Checklist.class)
                 .get(0).getCheckpoints().size())
@@ -339,4 +339,109 @@ public class CheckpointServiceTest {
             .isEqualTo(0);
     }
 
+    @Test
+    @DisplayName("Should Throw an ApiRequestException When Turning a Non-Existent SubCheckpoint into a Checkpoint Under an Existing Checklist")
+    public void throwExceptionTurningNonExistentSubCheckpointToCheckpoint() {
+        //Given
+        Checklist checklist = new Checklist("listId01", "Checklist Title"); //Create Checklist 
+        Checkpoint checkpoint = new Checkpoint("pointId01", "Checkpoint Content", false, false);
+        Checkpoint subCheckpoint = mongoTemplate.insert(new Checkpoint("pointId02", "SubCheckpoint To Checkpoint", false, true));
+
+        List<Checkpoint> subcheckpoints = new ArrayList<>(); //Create a List of Subcheckpoints
+        subcheckpoints.add(subCheckpoint); //Add Subcheckpoint to List
+        checkpoint.setSubCheckpoints(subcheckpoints); //Add List of Subcheckpoints to Checkpoint
+        mongoTemplate.insert(checkpoint);
+
+        List<Checkpoint> checkpoints = new ArrayList<>(); //Create a List of Checkpoints
+        checkpoints.add(checkpoint); //Add Checkpoints to List 
+
+        checklist.setCheckpoints(checkpoints); //Add List of Checkpoints to Checklist
+        mongoTemplate.insert(checklist); 
+
+        //Then
+        Assertions.assertThatThrownBy(() -> {
+            checkpointService.reverseSubcheckpoint("listId01", "pointId01", "pointId09");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("SubCheckpoint You Provided Doesn't Exist");
+    }
+
+    @Test
+    @DisplayName("Should Throw an ApiRequestException When Turning an Existing SubCheckpoint into a Checkpoint Under an Non-Existent Checklist")
+    public void throwExceptionTurningExistingSubCheckpointToCheckpointUnderNonExistentChecklist() {
+        //Given
+        Checklist checklist = new Checklist("listId01", "Checklist Title"); //Create Checklist 
+        Checkpoint checkpoint = new Checkpoint("pointId01", "Checkpoint Content", false, false);
+        Checkpoint subCheckpoint = mongoTemplate.insert(new Checkpoint("pointId02", "SubCheckpoint To Checkpoint", false, true));
+
+        List<Checkpoint> subcheckpoints = new ArrayList<>(); //Create a List of Subcheckpoints
+        subcheckpoints.add(subCheckpoint); //Add Subcheckpoint to List
+        checkpoint.setSubCheckpoints(subcheckpoints); //Add List of Subcheckpoints to Checkpoint
+        mongoTemplate.insert(checkpoint);
+
+        List<Checkpoint> checkpoints = new ArrayList<>(); //Create a List of Checkpoints
+        checkpoints.add(checkpoint); //Add Checkpoints to List 
+
+        checklist.setCheckpoints(checkpoints); //Add List of Checkpoints to Checklist
+        mongoTemplate.insert(checklist); 
+
+        //Then
+        Assertions.assertThatThrownBy(() -> {
+            checkpointService.reverseSubcheckpoint("listId09", "pointId01", "pointId02");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Checklist You Provided Doesn't Exist");
+    }
+
+    @Test
+    @DisplayName("Should Throw an ApiRequestException When Turning an Existing SubCheckpoint into a Checkpoint Under a Non-Existent Checkpoint")
+    public void throwExceptionTurningExistingSubCheckpointUnderNonExistentCheckpoint() {
+        //Given
+        Checklist checklist = new Checklist("listId01", "Checklist Title"); //Create Checklist 
+        Checkpoint checkpoint = new Checkpoint("pointId01", "Checkpoint Content", false, false);
+        Checkpoint subCheckpoint = mongoTemplate.insert(new Checkpoint("pointId02", "SubCheckpoint To Checkpoint", false, true));
+
+        List<Checkpoint> subcheckpoints = new ArrayList<>(); //Create a List of Subcheckpoints
+        subcheckpoints.add(subCheckpoint); //Add Subcheckpoint to List
+        checkpoint.setSubCheckpoints(subcheckpoints); //Add List of Subcheckpoints to Checkpoint
+        mongoTemplate.insert(checkpoint);
+
+        List<Checkpoint> checkpoints = new ArrayList<>(); //Create a List of Checkpoints
+        checkpoints.add(checkpoint); //Add Checkpoints to List 
+
+        checklist.setCheckpoints(checkpoints); //Add List of Checkpoints to Checklist
+        mongoTemplate.insert(checklist); 
+
+        //Then
+        Assertions.assertThatThrownBy(() -> {
+            checkpointService.reverseSubcheckpoint("listId01", "pointId09", "pointId02");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Parent Checkpoint You Provided Doesn't Exist");
+    }
+
+    @Test
+    @DisplayName("Should Convert a Checkpoint's isComplete to boolean true ")
+    public void shouldConvertIsCompleteToTrue() {
+        //Given
+        mongoTemplate.insert(new Checkpoint("pointId01", "Checkpoint Content", false, false)); 
+
+        //When
+        checkpointService.completeCheckpoint("pointId01");
+
+        //Then
+        Assertions.assertThat(checkpointRepository.findCheckpointByPointId("pointId01")
+                .get().isComplete())
+            .isTrue();
+    }
+
+    @Test
+    @DisplayName("Should Throw an ApiRequestException When Converting isComplete attribute in Non-Existent Checkpoint ")
+    public void throwExceptionConvertingIsCompleteToTrueInNonExistentCheckpoint() {
+        //Given
+        mongoTemplate.insert(new Checkpoint("pointId01", "Checkpoint Content", false, false)); 
+
+        //Then
+        Assertions.assertThatThrownBy(() -> {
+            checkpointService.completeCheckpoint("pointId09");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Checkpoint You Provided Doesn't Exist");
+    }
 }

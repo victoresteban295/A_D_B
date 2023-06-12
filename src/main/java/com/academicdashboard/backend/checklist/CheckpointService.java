@@ -165,14 +165,14 @@ public class CheckpointService {
             mongoTemplate.findOne(
                     query("pointId", subpointId), 
                     Checkpoint.class))
-            .orElseThrow(() -> new ApiRequestException("Sub-Checkpoint Doesn't Exist"));
+            .orElseThrow(() -> new ApiRequestException("SubCheckpoint You Provided Doesn't Exist"));
 
-        if(mongoTemplate.exists(query("pointId", pointId), Checklist.class)) {
+        if(mongoTemplate.exists(query("pointId", pointId), Checkpoint.class)) {
             //Remove from Checkpoint's checkpoints atrribute
             mongoTemplate.findAndModify(
                     query("pointId", pointId), 
                     pullUpdate("subCheckpoints", subpoint), 
-                    Checklist.class);
+                    Checkpoint.class);
 
             if(mongoTemplate.exists(query("listId", listId), Checklist.class)) {
                 //Add SubCheckpoint back to Checklist
@@ -187,8 +187,6 @@ public class CheckpointService {
         } else {
             throw new ApiRequestException("Parent Checkpoint You Provided Doesn't Exist");
         }
-
-
     }
 
     //Check off Complete Property on Checkpoint | Return Checkpoint
@@ -198,7 +196,7 @@ public class CheckpointService {
                 mongoTemplate.findOne(
                         query, 
                         Checkpoint.class))
-            .orElseThrow(() -> new ApiRequestException("Checkpoint Doesn't Exist"));
+            .orElseThrow(() -> new ApiRequestException("Checkpoint You Provided Doesn't Exist"));
 
         return mongoTemplate.findAndModify(
                     query, 
