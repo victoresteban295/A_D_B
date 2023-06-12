@@ -25,9 +25,6 @@ public class GrouplistService {
     @Autowired
     private GrouplistRepository repository;
 
-    // @Autowired
-    // private ChecklistRepository checklistRepo;
-
     @Autowired
     private MongoTemplate mongoTemplate;
 
