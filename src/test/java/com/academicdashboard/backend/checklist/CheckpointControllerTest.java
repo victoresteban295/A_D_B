@@ -96,6 +96,91 @@ public class CheckpointControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.pointId", Matchers.is(checkpoint.getPointId())))
             .andExpect(MockMvcResultMatchers.jsonPath("$.content", Matchers.is(checkpoint.getContent())))
             .andExpect(MockMvcResultMatchers.jsonPath("$.isComplete", Matchers.is(checkpoint.isComplete())))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.isSubpoint", Matchers.is(checkpoint.isSubpoint())));
+            .andExpect(MockMvcResultMatchers.jsonPath("$.isSubpoint", Matchers.is(checkpoint.isSubpoint())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.subCheckpoints", Matchers.hasSize(1)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.subCheckpoints[0].pointId", Matchers.is(subpoint.getPointId())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.subCheckpoints[0].content", Matchers.is(subpoint.getContent())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.subCheckpoints[0].isComplete", Matchers.is(subpoint.isComplete())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.subCheckpoints[0].isSubpoint", Matchers.is(subpoint.isSubpoint())));
+    }
+
+    @Test
+    @DisplayName("Should Return Checkpoint with Newly Added Subcheckpoint When Making a Put Request to endpoint - /api/checkpoint/new/subpoint/{pointId}")
+    public void shouldCreateNewSubCheckpointUnderCheckpoint() throws Exception {
+        Checkpoint checkpoint = new Checkpoint("pointId01", "Parent Content", false, false); 
+        Checkpoint subpoint = new Checkpoint("pointId02", "New Subpoint Content", false, true); 
+        List<Checkpoint> subpoints = new ArrayList<>();
+        subpoints.add(subpoint);
+        checkpoint.setSubCheckpoints(subpoints);
+
+        Mockito.when(checkpointService.newSubcheckpoint("pointId01", "New Subpoint Content"))
+           .thenReturn(checkpoint);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/checkpoint/new/subpoint/pointId01")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"content\": \"New Subpoint Content\"}"))
+            .andExpect(MockMvcResultMatchers.status().is(200))
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.pointId", Matchers.is(checkpoint.getPointId())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content", Matchers.is(checkpoint.getContent())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.isComplete", Matchers.is(checkpoint.isComplete())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.isSubpoint", Matchers.is(checkpoint.isSubpoint())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.subCheckpoints", Matchers.hasSize(1)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.subCheckpoints[0].pointId", Matchers.is(subpoint.getPointId())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.subCheckpoints[0].content", Matchers.is(subpoint.getContent())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.subCheckpoints[0].isComplete", Matchers.is(subpoint.isComplete())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.subCheckpoints[0].isSubpoint", Matchers.is(subpoint.isSubpoint())));
+    }
+
+    @Test
+    @DisplayName("Should Return Checklist with Checkpoints When Making a Put Request to endpoint - /api/checkpoint/reverse/subpoint/{listId}")
+    public void shouldReverseSubCheckpointToCheckpoint() throws Exception {
+        Checklist checklist = new Checklist("listId01", "Checklist Title");
+        Checkpoint checkpoint01 = new Checkpoint("pointId01", "Checkpoint Content", false, false); 
+        Checkpoint checkpoint02 = new Checkpoint("pointId02", "SubCheckpoint to Checkpoint", false, true); 
+        List<Checkpoint> checkpoints = new ArrayList<>();
+        checkpoints.add(checkpoint01);
+        checkpoints.add(checkpoint02);
+        checklist.setCheckpoints(checkpoints);
+
+        Mockito.when(checkpointService.reverseSubcheckpoint("listId01", "pointId01", "pointId02"))
+           .thenReturn(checklist);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/checkpoint/reverse/subpoint/listId01")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"pointId\": \"pointId01\", \"subpointId\": \"pointId02\"}"))
+            .andExpect(MockMvcResultMatchers.status().is(200))
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.listId", Matchers.is(checklist.getListId())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is(checklist.getTitle())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints", Matchers.hasSize(2)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].pointId", Matchers.is(checkpoint01.getPointId())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].content", Matchers.is(checkpoint01.getContent())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].isComplete", Matchers.is(checkpoint01.isComplete())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].isSubpoint", Matchers.is(checkpoint01.isSubpoint())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].subCheckpoints", Matchers.hasSize(0)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[1].pointId", Matchers.is(checkpoint02.getPointId())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[1].content", Matchers.is(checkpoint02.getContent())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[1].isComplete", Matchers.is(checkpoint02.isComplete())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[1].isSubpoint", Matchers.is(checkpoint02.isSubpoint())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[1].subCheckpoints", Matchers.hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("Should Return Checkpoint with isComplete Equal To True When Making a Put Request to endpoint - /api/checkpoint/new/subpoint/{pointId}")
+    public void shouldCompleteCheckpoint() throws Exception {
+        Checkpoint checkpoint = new Checkpoint("pointId01", "Checkpoint Content", true, false); 
+
+        Mockito.when(checkpointService.completeCheckpoint("pointId01"))
+           .thenReturn(checkpoint);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/checkpoint/complete/pointId01"))
+            .andExpect(MockMvcResultMatchers.status().is(200))
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.pointId", Matchers.is(checkpoint.getPointId())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content", Matchers.is(checkpoint.getContent())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.isComplete", Matchers.is(checkpoint.isComplete())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.isSubpoint", Matchers.is(checkpoint.isSubpoint())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.subCheckpoints", Matchers.hasSize(0)));
     }
 }
