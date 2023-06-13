@@ -31,7 +31,6 @@ public class CheckpointController {
             HttpStatus.CREATED);
     }
 
-
     //Modify Existing Checkpoint | Returns Modified Checkpoint
     @PutMapping("/modify/{pointId}")
     public ResponseEntity<Checkpoint> modifyCheckpoint(

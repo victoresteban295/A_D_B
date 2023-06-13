@@ -7,6 +7,8 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,9 +22,12 @@ public class Checkpoint {
     @Id
     private ObjectId id;
 
+    
     String pointId;
     String content;
+    @JsonProperty(value = "isComplete")
     boolean isComplete;
+    @JsonProperty(value = "isSubpoint")
     boolean isSubpoint;
     List<Checkpoint> subCheckpoints;
 

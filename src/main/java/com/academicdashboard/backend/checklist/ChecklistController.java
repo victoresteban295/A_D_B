@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.AllArgsConstructor;
 
 @RestController
-@RequestMapping("/api/checklist")
+@RequestMapping("api/checklist")
 @AllArgsConstructor
 public class ChecklistController {
 
