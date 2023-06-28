@@ -19,11 +19,13 @@ import com.academicdashboard.backend.course.Course;
 import com.academicdashboard.backend.reminder.ReminderList;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Document(collection = "student")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Student implements UserDetails {
