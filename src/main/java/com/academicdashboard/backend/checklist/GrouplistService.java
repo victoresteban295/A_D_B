@@ -13,7 +13,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import com.academicdashboard.backend.exception.ApiRequestException;
-import com.academicdashboard.backend.student.Student;
+import com.academicdashboard.backend.user.Student;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
 import lombok.AllArgsConstructor;
