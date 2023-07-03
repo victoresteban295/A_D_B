@@ -23,18 +23,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         /* Configuring all the HTTP Security of our Application */
         http
-            .csrf()
-            .disable()
-            .authorizeHttpRequests()
-            .requestMatchers("/api/auth/**") //Whitelist: endpoints don't require authentication
-            .permitAll()
-            .anyRequest()
-            .authenticated()
-            .and()
-            .sessionManagement() //Ensures Sever Holds No Session Info (STATELESS)
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and() //Provide AuthenticationProvider We Want to Use
-            .authenticationProvider(authenticationProvider) //Add JwtAuthenticationFilter Before User..Filter
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> {
+                auth.requestMatchers("/api/auth/**").permitAll();
+                auth.requestMatchers("/prof/**").hasRole("PROFESSOR");
+                auth.requestMatchers("/stud/**").hasRole("STUDENT");
+                auth.requestMatchers("/user/**").hasAnyRole("PROFESSSOR", "STUDENT", "USER");
+                auth.anyRequest().authenticated();
+            });
+
+        http.sessionManagement(
+                session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        http
+            .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
             
         return http.build();

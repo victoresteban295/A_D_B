@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.academicdashboard.backend.user.StudentRepository;
+import com.academicdashboard.backend.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,11 +19,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ApplicationConfig {
 
-    private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> studentRepository.findStudentByUsername(username)
+        return username -> userRepository.findUserByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("Username Not Valid"));
     }
 

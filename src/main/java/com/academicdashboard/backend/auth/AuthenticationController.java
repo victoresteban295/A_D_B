@@ -17,7 +17,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(
+    public ResponseEntity<AuthenticationResponse> registerStudent(
             @RequestBody RegisterRequest request) {
 
         return new ResponseEntity<AuthenticationResponse>(
@@ -26,11 +26,12 @@ public class AuthenticationController {
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> register(
+    public ResponseEntity<AuthenticationResponse> authenticateStudent(
             @RequestBody AuthenticationRequest request) {
 
         return new ResponseEntity<AuthenticationResponse>(
                 authenticationService.authenticate(request), 
                 HttpStatus.OK);
     }
+
 }
