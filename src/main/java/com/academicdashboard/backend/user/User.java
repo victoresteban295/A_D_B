@@ -3,13 +3,14 @@ package com.academicdashboard.backend.user;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.academicdashboard.backend.checklist.Checklist;
@@ -31,6 +32,8 @@ public class User implements UserDetails {
 
     @Id
     private ObjectId id; //MongoDB ObjectId
+
+    @Indexed(unique = true)
     private String userId; //Public Id (JNanoId)
 
     //User Information
@@ -39,13 +42,14 @@ public class User implements UserDetails {
 
     //Account Information
     private String profileType; //STUDENT || PROFESSOR
+
+    @Indexed(unique = true)
     private String email;
+
     private String phone;
     private String username;
     private String password;
-
-    @DocumentReference
-    private Set<Role> authorities;
+    private Role role;
 
     //Academic Institution Information
     private String schoolName;
@@ -73,7 +77,7 @@ public class User implements UserDetails {
     /********** UserDetails Interface Override Methods ***********/
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.authorities;
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override

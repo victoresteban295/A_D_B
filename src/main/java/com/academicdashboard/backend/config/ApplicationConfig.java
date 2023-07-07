@@ -23,6 +23,7 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
+        /* Tell Spring Security How Look For Our User During Authentication */
         return username -> userRepository.findUserByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("Username Not Valid"));
     }

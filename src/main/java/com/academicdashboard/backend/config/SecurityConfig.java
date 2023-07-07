@@ -26,9 +26,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/api/auth/**").permitAll();
-                auth.requestMatchers("/prof/**").hasRole("PROFESSOR");
-                auth.requestMatchers("/stud/**").hasRole("STUDENT");
-                auth.requestMatchers("/user/**").hasAnyRole("PROFESSSOR", "STUDENT", "USER");
+                auth.requestMatchers("/api/prof/**").hasRole("PROFESSOR");
+                auth.requestMatchers("/api/stud/**").hasAnyRole("STUDENT", "PROFESSOR");
                 auth.anyRequest().authenticated();
             });
 

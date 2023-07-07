@@ -1,8 +1,6 @@
 package com.academicdashboard.backend.auth;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,18 +32,18 @@ public class AuthenticationService {
     public AuthenticationResponse register(RegisterRequest request) {
 
         Profile profile;
-        Set<Role> authorities = new HashSet<>();
-        authorities.add(new Role(request.getProfileType())); //Get Role from request 
-        authorities.add(new Role("USER"));
+        Role role;
 
         if(request.getProfileType() == "STUDENT") {
             profile = new Student();
             profile.setFirstName(request.getFirstName());
             profile.setLastName(request.getLastName());
+            role = Role.STUDENT;
         } else {
             profile = new Professor();
             profile.setFirstName(request.getFirstName());
             profile.setLastName(request.getLastName());
+            role = Role.PROF;
         }
 
         //Create New User Using Builder
@@ -57,7 +55,7 @@ public class AuthenticationService {
             .email(request.getEmail())
             .username(request.getUsername())
             .password(passwordEncoder.encode(request.getPassword()))
-            .authorities(authorities)
+            .role(role)
             .schoolName(request.getSchoolName())
             .schoolId(request.getSchoolId())
             .profile(profile)
@@ -74,6 +72,7 @@ public class AuthenticationService {
         var jwtToken = jwtService.generateToken(user);
 
         return AuthenticationResponse.builder()
+            .username(request.getUsername())
             .token(jwtToken)
             .build();
     }
@@ -95,6 +94,7 @@ public class AuthenticationService {
         var jwtToken = jwtService.generateToken(user);
 
         return AuthenticationResponse.builder()
+            .username(request.getUsername())
             .token(jwtToken)
             .build();
     }
