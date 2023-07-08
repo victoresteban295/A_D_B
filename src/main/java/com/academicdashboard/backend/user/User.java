@@ -17,6 +17,7 @@ import com.academicdashboard.backend.checklist.Checklist;
 import com.academicdashboard.backend.checklist.Grouplist;
 import com.academicdashboard.backend.course.Course;
 import com.academicdashboard.backend.reminder.ReminderList;
+import com.academicdashboard.backend.token.Token;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -59,6 +60,10 @@ public class User implements UserDetails {
     private Profile profile;
 
     //Data Relationships
+
+    @DocumentReference
+    private List<Token> tokens;
+
     @DocumentReference
     private List<Course> courses;
 
