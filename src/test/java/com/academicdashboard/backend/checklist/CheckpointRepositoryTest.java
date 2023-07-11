@@ -12,6 +12,7 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+
 @Testcontainers //Register Testcontainer
 @DataMongoTest
 public class CheckpointRepositoryTest {

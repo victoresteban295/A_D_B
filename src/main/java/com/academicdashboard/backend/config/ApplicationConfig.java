@@ -1,5 +1,6 @@
 package com.academicdashboard.backend.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,22 +12,28 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.academicdashboard.backend.user.UserDetailsServiceImpl;
 import com.academicdashboard.backend.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Configuration
-@RequiredArgsConstructor
+// @RequiredArgsConstructor
 public class ApplicationConfig {
 
-    private final UserRepository userRepository;
+    // private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        /* Tell Spring Security How Look For Our User During Authentication */
-        return username -> userRepository.findUserByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException("Username Not Valid"));
-    }
+    @Autowired
+    private UserDetailsServiceImpl userDetailsServiceImpl;
+
+    // @Bean
+    // public UserDetailsService userDetailsService() {
+    //     /* Tell Spring Security How Look For Our User During Authentication */
+    //     return username -> userRepository.findUserByUsername(username)
+    //         .orElseThrow(() -> new UsernameNotFoundException("Username Not Valid"));
+    // }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -34,7 +41,7 @@ public class ApplicationConfig {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(); 
 
         //Provide the AuthenticationProvider The UserDetailsService to Use 
-        authProvider.setUserDetailsService(userDetailsService()); //Passing Bean Above
+        authProvider.setUserDetailsService(userDetailsServiceImpl); //Passing Bean Above
 
         //Provide the AuthenticationProvider The PasswordEncoder to Use
         authProvider.setPasswordEncoder(passwordEncoder());

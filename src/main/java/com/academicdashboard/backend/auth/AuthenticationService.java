@@ -2,6 +2,7 @@ package com.academicdashboard.backend.auth;
 
 import java.util.ArrayList;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -25,15 +26,33 @@ import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
+// @RequiredArgsConstructor
 public class AuthenticationService {
 
-    private final UserRepository userRepository;
-    private final TokenRepository tokenRepository;
-    private final MongoTemplate mongoTemplate;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
+    // private final UserRepository userRepository;
+    // private final TokenRepository tokenRepository;
+    // private final MongoTemplate mongoTemplate;
+    // private final PasswordEncoder passwordEncoder;
+    // private final JwtService jwtService;
+    // private final AuthenticationManager authenticationManager;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private TokenRepository tokenRepository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     /* Register New User */
     public AuthenticationResponse register(RegisterRequest request) {

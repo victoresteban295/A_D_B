@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/grouplist")
+@RequestMapping("/api/stud/grouplist")
 public class GrouplistController {
 
     @Autowired

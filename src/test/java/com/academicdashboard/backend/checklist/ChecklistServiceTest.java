@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
@@ -18,7 +19,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.academicdashboard.backend.exception.ApiRequestException;
-import com.academicdashboard.backend.student.Student;
+import com.academicdashboard.backend.user.User;
+import com.academicdashboard.backend.user.UserRepository;
 
 @Testcontainers
 @DataMongoTest
@@ -38,6 +40,9 @@ public class ChecklistServiceTest {
     @Autowired
     private ChecklistRepository checklistRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private ChecklistService checklistService;
 
     @BeforeEach
@@ -53,20 +58,19 @@ public class ChecklistServiceTest {
     }
 
     @Test
+    @WithMockUser(username="Victor", roles="STUDENT")
     @DisplayName("Should Create a New Checklist Under Student")
     public void shouldCreateNewChecklist() {
-        Student student = new Student(
-                "123973789abjdrfklwi75", 
-                "Victor", 
-                "Benitez", 
-                "March", 19, 1998, 
-                "Albion College", 
-                "Senor", 
-                "Mathematics", "", "", 
-                "emails@email.com", 
-                "psword", 
-                "3233459856");
-        mongoTemplate.insert(student);
+
+        //Create New User
+        var user = User.builder()
+            .userId("123973789abjdrfklwi75")
+            .firstname("Victor")
+            .lastname("Benitez")
+            .checklists(new ArrayList<>())
+            .grouplists(new ArrayList<>())
+            .build();
+        userRepository.save(user);
 
         //When
         checklistService.createChecklist("123973789abjdrfklwi75", "listTitle");
@@ -74,13 +78,14 @@ public class ChecklistServiceTest {
         //Then
         Assertions.assertThat(checklistRepository.findAll().get(0).getTitle()).isEqualTo("listTitle");
 
-        Assertions.assertThat(mongoTemplate.findAll(Student.class)
+        Assertions.assertThat(mongoTemplate.findAll(User.class)
                 .get(0).getChecklists().get(0).getTitle()).isEqualTo("listTitle");
 
-        mongoTemplate.remove(student);
+        userRepository.delete(user);
     }
 
     @Test
+    @WithMockUser(username="Victor", roles="STUDENT")
     @DisplayName("Should Modify an Existing Checklist")
     public void modifyExistingChecklistTitle() {
         //Given
@@ -95,6 +100,7 @@ public class ChecklistServiceTest {
     }
 
     @Test
+    @WithMockUser(username="Victor", roles="STUDENT")
     @DisplayName("Should Throw an ApiRequestException When Modifying Non-existent Checklist")
     public void throwExceptionModifyingNonexistentChecklist() {
         //Given
@@ -110,6 +116,7 @@ public class ChecklistServiceTest {
     } 
 
     @Test
+    @WithMockUser(username="Victor", roles="STUDENT")
     @DisplayName("Should Delete Checklist with its Checkpoints")
     public void shouldDeleteChecklistWithCheckpoints() {
         Checklist checklist = new Checklist("id01", "title01");
@@ -133,6 +140,7 @@ public class ChecklistServiceTest {
 
     //Test Deleting Checklist with no checkpoints
     @Test
+    @WithMockUser(username="Victor", roles="STUDENT")
     @DisplayName("Should Delete Checklist")
     public void shouldDeleteChecklist() {
         Checklist checklist = new Checklist("id01", "title01");
@@ -148,6 +156,7 @@ public class ChecklistServiceTest {
     }
 
     @Test
+    @WithMockUser(username="Victor", roles="STUDENT")
     @DisplayName("Should Throw an ApiRequestException When Modifying Non-existent Checklist")
     public void throwExceptionDeletingNonexistentChecklist() {
         //Given

@@ -3,16 +3,22 @@ package com.academicdashboard.backend.checklist;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = ChecklistController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class ChecklistControllerTest {
 
     @MockBean
@@ -22,6 +28,7 @@ public class ChecklistControllerTest {
     private MockMvc mockMvc;
 
     @Test
+    @WithMockUser(username = "Victor", roles = "STUDENT")
     @DisplayName("Should Return Newly Created Checklist When Making POST request to endpoints - /api/checklist/new/{userId}")
     public void shouldCreateNewChecklist() throws Exception {
         Checklist checklist = new Checklist("12345", "Checklist Title");
@@ -40,6 +47,7 @@ public class ChecklistControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "Victor", roles = "STUDENT")
     @DisplayName("Should Return Modified Checklist When Making PUT request to endpoints - /api/checklist/modify/{listId}")
     public void shouldModifyExistingChecklist() throws Exception {
         Checklist response = new Checklist("12345", "New Checklist Title");
@@ -58,6 +66,7 @@ public class ChecklistControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "Victor", roles = "STUDENT")
     @DisplayName("Should Only Return 204 Status Code When Making DELETE request to endpoints - /api/checklist/delete/{listId}")
     public void shouldDeleteExistingChecklist() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/checklist/delete/12345"))

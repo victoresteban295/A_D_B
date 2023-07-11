@@ -19,6 +19,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.academicdashboard.backend.exception.ApiRequestException;
 import com.academicdashboard.backend.student.Student;
+import com.academicdashboard.backend.user.User;
+import com.academicdashboard.backend.user.UserRepository;
 
 @Testcontainers
 @DataMongoTest
@@ -37,6 +39,9 @@ public class GrouplistServiceTest {
 
     @Autowired
     private GrouplistRepository grouplistRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private GrouplistService grouplistService;
 
@@ -59,18 +64,16 @@ public class GrouplistServiceTest {
     @Test
     @DisplayName("Should Create a New Grouplist Under Student")
     public void shouldCreateNewGrouplist() {
-        Student student = new Student(
-                "123973789abjdrfklwi75", 
-                "Victor", 
-                "Benitez", 
-                "March", 19, 1998, 
-                "Albion College", 
-                "Senor", 
-                "Mathematics", "", "", 
-                "emails@email.com", 
-                "psword", 
-                "3233459856");
-        mongoTemplate.insert(student);
+
+        //Create New User
+        var user = User.builder()
+            .userId("123973789abjdrfklwi75")
+            .firstname("Victor")
+            .lastname("Benitez")
+            .checklists(new ArrayList<>())
+            .grouplists(new ArrayList<>())
+            .build();
+        userRepository.save(user);
         
         //When
         grouplistService.createGrouplist("123973789abjdrfklwi75", "grouplistTitle");
@@ -79,10 +82,10 @@ public class GrouplistServiceTest {
         Assertions.assertThat(grouplistRepository.findAll().get(0).getTitle())
             .isEqualTo("grouplistTitle");
 
-        Assertions.assertThat(mongoTemplate.findAll(Student.class).get(0).getGrouplists().get(0).getTitle())
+        Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getGrouplists().get(0).getTitle())
             .isEqualTo("grouplistTitle");
 
-        mongoTemplate.remove(student);
+        userRepository.delete(user);
     }
 
     @Test
@@ -151,17 +154,13 @@ public class GrouplistServiceTest {
     @DisplayName("Should Add an Existing Checklist Under an Existing Grouplist")
     public void addExistingChecklistUnderExistingGrouplist() {
         //Given
-        Student student = new Student(
-                "123973789abjdrfklwi75", 
-                "Victor", 
-                "Benitez", 
-                "March", 19, 1998, 
-                "Albion College", 
-                "Senor", 
-                "Mathematics", "", "", 
-                "emails@email.com", 
-                "psword", 
-                "3233459856");
+        var user = User.builder()
+            .userId("123973789abjdrfklwi75")
+            .firstname("Victor")
+            .lastname("Benitez")
+            .checklists(new ArrayList<>())
+            .grouplists(new ArrayList<>())
+            .build();
 
         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
@@ -175,8 +174,8 @@ public class GrouplistServiceTest {
         checklists.add(checklist02);
         checklists.add(checklist03);
 
-        student.setChecklists(checklists);
-        mongoTemplate.insert(student);
+        user.setChecklists(checklists);
+        userRepository.save(user);
 
         this.grouplistRepository.insert(new Grouplist("gId01", "Grouplist Title01"));
         this.grouplistRepository.insert(new Grouplist("gId02", "Grouplist Title02"));
@@ -188,24 +187,20 @@ public class GrouplistServiceTest {
         //Then
         Grouplist returnedValue = this.grouplistRepository.findGrouplistByGroupId("gId02").get();
         Assertions.assertThat(returnedValue.getChecklists().get(0).getTitle()).isEqualTo("Checklist Title 03");
-        Assertions.assertThat(mongoTemplate.findAll(Student.class).get(0).getChecklists().size()).isEqualTo(2);
+        Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getChecklists().size()).isEqualTo(2);
     }
 
     @Test
     @DisplayName("Should Throw Exception When Adding a Non-Existent Checklist Under an Existing Grouplist")
     public void shouldThrowExceptionAddingNonExistentChecklistUnderExistingGrouplist() {
         //Given
-        Student student = new Student(
-                "123973789abjdrfklwi75", 
-                "Victor", 
-                "Benitez", 
-                "March", 19, 1998, 
-                "Albion College", 
-                "Senor", 
-                "Mathematics", "", "", 
-                "emails@email.com", 
-                "psword", 
-                "3233459856");
+        var user = User.builder()
+            .userId("123973789abjdrfklwi75")
+            .firstname("Victor")
+            .lastname("Benitez")
+            .checklists(new ArrayList<>())
+            .grouplists(new ArrayList<>())
+            .build();
 
         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
@@ -219,8 +214,8 @@ public class GrouplistServiceTest {
         checklists.add(checklist02);
         checklists.add(checklist03);
 
-        student.setChecklists(checklists);
-        mongoTemplate.insert(student);
+        user.setChecklists(checklists);
+        userRepository.save(user);
 
         this.grouplistRepository.insert(new Grouplist("gId01", "Grouplist Title01"));
         this.grouplistRepository.insert(new Grouplist("gId02", "Grouplist Title02"));
@@ -237,17 +232,13 @@ public class GrouplistServiceTest {
     @DisplayName("Should Throw Exception When Adding an Existent Checklist Under a Non-Existent Grouplist")
     public void shouldThrowExceptionAddingExistingChecklistUnderNonExistentGrouplist() {
         //Given
-        Student student = new Student(
-                "123973789abjdrfklwi75", 
-                "Victor", 
-                "Benitez", 
-                "March", 19, 1998, 
-                "Albion College", 
-                "Senor", 
-                "Mathematics", "", "", 
-                "emails@email.com", 
-                "psword", 
-                "3233459856");
+        var user = User.builder()
+            .userId("123973789abjdrfklwi75")
+            .firstname("Victor")
+            .lastname("Benitez")
+            .checklists(new ArrayList<>())
+            .grouplists(new ArrayList<>())
+            .build();
 
         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
@@ -261,8 +252,8 @@ public class GrouplistServiceTest {
         checklists.add(checklist02);
         checklists.add(checklist03);
 
-        student.setChecklists(checklists);
-        mongoTemplate.insert(student);
+        user.setChecklists(checklists);
+        userRepository.save(user);
 
         this.grouplistRepository.insert(new Grouplist("gId01", "Grouplist Title01"));
         this.grouplistRepository.insert(new Grouplist("gId02", "Grouplist Title02"));
@@ -279,17 +270,13 @@ public class GrouplistServiceTest {
     @DisplayName("Should Remove an Existing Checklist Under an Existing Grouplist")
     public void removeExistingChecklistUnderExistingGrouplist() {
         //Given
-        Student student = new Student(
-                "123973789abjdrfklwi75", 
-                "Victor", 
-                "Benitez", 
-                "March", 19, 1998, 
-                "Albion College", 
-                "Senor", 
-                "Mathematics", "", "", 
-                "emails@email.com", 
-                "psword", 
-                "3233459856");
+        var user = User.builder()
+            .userId("123973789abjdrfklwi75")
+            .firstname("Victor")
+            .lastname("Benitez")
+            .checklists(new ArrayList<>())
+            .grouplists(new ArrayList<>())
+            .build();
 
         //Grouplist with Checklists
         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
@@ -322,14 +309,14 @@ public class GrouplistServiceTest {
         grouplists.add(grouplist02);
         grouplists.add(grouplist03);
 
-        student.setGrouplists(grouplists); //Add List<Grouplist> to Student
-        mongoTemplate.insert(student); //Add Student to Repo
+        user.setGrouplists(grouplists);
+        userRepository.save(user);
 
         //When 
         grouplistService.removefromGrouplist("123973789abjdrfklwi75", "gId01", "lId03");
 
         //Then
-        Assertions.assertThat(mongoTemplate.findAll(Student.class)
+        Assertions.assertThat(mongoTemplate.findAll(User.class)
                 .get(0).getChecklists().get(0).getTitle())
             .isEqualTo("Checklist Title 03");
         Grouplist returnedValue = this.grouplistRepository.findGrouplistByGroupId("gId01").get();
@@ -340,17 +327,13 @@ public class GrouplistServiceTest {
     @DisplayName("Should Throw Exception When Removing a Non-Existent Checklist Under an Existing Grouplist")
     public void throwExceptionWhenRemovingNonExistentChecklistUnderExistingGrouplist() {
         //Given
-        Student student = new Student(
-                "123973789abjdrfklwi75", 
-                "Victor", 
-                "Benitez", 
-                "March", 19, 1998, 
-                "Albion College", 
-                "Senor", 
-                "Mathematics", "", "", 
-                "emails@email.com", 
-                "psword", 
-                "3233459856");
+        var user = User.builder()
+            .userId("123973789abjdrfklwi75")
+            .firstname("Victor")
+            .lastname("Benitez")
+            .checklists(new ArrayList<>())
+            .grouplists(new ArrayList<>())
+            .build();
 
         //Grouplist with Checklists
         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
@@ -383,8 +366,8 @@ public class GrouplistServiceTest {
         grouplists.add(grouplist02);
         grouplists.add(grouplist03);
 
-        student.setGrouplists(grouplists); //Add List<Grouplist> to Student
-        mongoTemplate.insert(student); //Add Student to Repo
+        user.setGrouplists(grouplists); 
+        userRepository.save(user); 
 
         //Then
         Assertions.assertThatThrownBy(() -> {
@@ -397,17 +380,13 @@ public class GrouplistServiceTest {
     @DisplayName("Should Throw Exception When Removing an Existing Checklist Under a Non-Existent Grouplist")
     public void throwExceptionWhenRemovingExistingChecklistUnderNonExistentGrouplist() {
         //Given
-        Student student = new Student(
-                "123973789abjdrfklwi75", 
-                "Victor", 
-                "Benitez", 
-                "March", 19, 1998, 
-                "Albion College", 
-                "Senor", 
-                "Mathematics", "", "", 
-                "emails@email.com", 
-                "psword", 
-                "3233459856");
+        var user = User.builder()
+            .userId("123973789abjdrfklwi75")
+            .firstname("Victor")
+            .lastname("Benitez")
+            .checklists(new ArrayList<>())
+            .grouplists(new ArrayList<>())
+            .build();
 
         //Grouplist with Checklists
         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
@@ -440,8 +419,8 @@ public class GrouplistServiceTest {
         grouplists.add(grouplist02);
         grouplists.add(grouplist03);
 
-        student.setGrouplists(grouplists); //Add List<Grouplist> to Student
-        mongoTemplate.insert(student); //Add Student to Repo
+        user.setGrouplists(grouplists);
+        userRepository.save(user);
 
         //Then
         Assertions.assertThatThrownBy(() -> {
@@ -454,17 +433,13 @@ public class GrouplistServiceTest {
     @DisplayName("Should Delete Grouplist without Deleteing it's Checklists")
     public void deleteGrouplistWithoutDeletingChecklists() {
         //Given
-        Student student = new Student(
-                "123973789abjdrfklwi75", 
-                "Victor", 
-                "Benitez", 
-                "March", 19, 1998, 
-                "Albion College", 
-                "Senor", 
-                "Mathematics", "", "", 
-                "emails@email.com", 
-                "psword", 
-                "3233459856");
+        var user = User.builder()
+            .userId("123973789abjdrfklwi75")
+            .firstname("Victor")
+            .lastname("Benitez")
+            .checklists(new ArrayList<>())
+            .grouplists(new ArrayList<>())
+            .build();
 
         //Grouplist with Checklists
         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
@@ -497,15 +472,15 @@ public class GrouplistServiceTest {
         grouplists.add(grouplist02);
         grouplists.add(grouplist03);
 
-        student.setGrouplists(grouplists); //Add List<Grouplist> to Student
-        mongoTemplate.insert(student); //Add Student to Repo
+        user.setGrouplists(grouplists);
+        userRepository.save(user);
 
         //When 
         grouplistService.deleteGrouplist("123973789abjdrfklwi75", "gId01", false);
 
         //Then
-        Assertions.assertThat(mongoTemplate.findAll(Student.class).get(0).getChecklists().size()).isEqualTo(3);
-        Assertions.assertThat(mongoTemplate.findAll(Student.class).get(0).getGrouplists().size()).isEqualTo(2);
+        Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getChecklists().size()).isEqualTo(3);
+        Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getGrouplists().size()).isEqualTo(2);
         Assertions.assertThat(mongoTemplate.findAll(Checklist.class).size()).isEqualTo(3);
     }
 
@@ -514,17 +489,13 @@ public class GrouplistServiceTest {
     @DisplayName("Should Delete Grouplist And Delete it's Checklists")
     public void deleteGrouplistAndDeleteChecklists() {
         //Given
-        Student student = new Student(
-                "123973789abjdrfklwi75", 
-                "Victor", 
-                "Benitez", 
-                "March", 19, 1998, 
-                "Albion College", 
-                "Senor", 
-                "Mathematics", "", "", 
-                "emails@email.com", 
-                "psword", 
-                "3233459856");
+        var user = User.builder()
+            .userId("123973789abjdrfklwi75")
+            .firstname("Victor")
+            .lastname("Benitez")
+            .checklists(new ArrayList<>())
+            .grouplists(new ArrayList<>())
+            .build();
 
         //Grouplist with Checklists
         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
@@ -557,15 +528,15 @@ public class GrouplistServiceTest {
         grouplists.add(grouplist02);
         grouplists.add(grouplist03);
 
-        student.setGrouplists(grouplists); //Add List<Grouplist> to Student
-        mongoTemplate.insert(student); //Add Student to Repo
+        user.setGrouplists(grouplists);
+        userRepository.save(user);
 
         //When 
         grouplistService.deleteGrouplist("123973789abjdrfklwi75", "gId01", true);
 
         //Then
-        Assertions.assertThat(mongoTemplate.findAll(Student.class).get(0).getChecklists().size()).isEqualTo(0);
-        Assertions.assertThat(mongoTemplate.findAll(Student.class).get(0).getGrouplists().size()).isEqualTo(2);
+        Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getChecklists().size()).isEqualTo(0);
+        Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getGrouplists().size()).isEqualTo(2);
         Assertions.assertThat(mongoTemplate.findAll(Checklist.class).size()).isEqualTo(0);
     }
     
@@ -573,17 +544,13 @@ public class GrouplistServiceTest {
     @DisplayName("Should Throw Exception When Deleting Non-Existent Grouplist")
     public void throwExceptionDeletingNonExistentGrouplist() {
         //Given
-        Student student = new Student(
-                "123973789abjdrfklwi75", 
-                "Victor", 
-                "Benitez", 
-                "March", 19, 1998, 
-                "Albion College", 
-                "Senor", 
-                "Mathematics", "", "", 
-                "emails@email.com", 
-                "psword", 
-                "3233459856");
+        var user = User.builder()
+            .userId("123973789abjdrfklwi75")
+            .firstname("Victor")
+            .lastname("Benitez")
+            .checklists(new ArrayList<>())
+            .grouplists(new ArrayList<>())
+            .build();
 
         //Grouplist with Checklists
         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
@@ -616,8 +583,8 @@ public class GrouplistServiceTest {
         grouplists.add(grouplist02);
         grouplists.add(grouplist03);
 
-        student.setGrouplists(grouplists); //Add List<Grouplist> to Student
-        mongoTemplate.insert(student); //Add Student to Repo
+        user.setGrouplists(grouplists);
+        userRepository.save(user);
 
         //Then
         Assertions.assertThatThrownBy(() -> {

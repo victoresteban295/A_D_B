@@ -30,7 +30,7 @@ public class CheckpointServiceTest {
     static void setProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
     }
-
+    
     @Autowired
     private MongoTemplate mongoTemplate;
 
