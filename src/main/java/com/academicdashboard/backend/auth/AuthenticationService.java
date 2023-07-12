@@ -17,10 +17,10 @@ import com.academicdashboard.backend.professor.Professor;
 import com.academicdashboard.backend.student.Student;
 import com.academicdashboard.backend.token.Token;
 import com.academicdashboard.backend.token.TokenRepository;
-import com.academicdashboard.backend.user.Profile;
 import com.academicdashboard.backend.user.Role;
 import com.academicdashboard.backend.user.User;
 import com.academicdashboard.backend.user.UserRepository;
+import com.academicdashboard.backend.user.UserType;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -57,7 +57,7 @@ public class AuthenticationService {
     /* Register New User */
     public AuthenticationResponse register(RegisterRequest request) {
 
-        Profile profile;
+        UserType profile;
         Role role;
         String userId = NanoIdUtils.randomNanoId();
 

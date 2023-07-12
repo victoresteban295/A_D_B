@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Profile {
+public class UserType {
 
     @Id
     private ObjectId id; //MongoDB ObjectId

@@ -57,7 +57,7 @@ public class User implements UserDetails {
     private String schoolId;
 
     @DocumentReference
-    private Profile profile;
+    private UserType profile;
 
     //Data Relationships
 

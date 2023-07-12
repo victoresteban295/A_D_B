@@ -13,7 +13,8 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import com.academicdashboard.backend.exception.ApiRequestException;
-import com.academicdashboard.backend.student.Student;
+import com.academicdashboard.backend.user.User;
+// import com.academicdashboard.backend.student.Student;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
 import lombok.AllArgsConstructor;
@@ -65,7 +66,7 @@ public class GrouplistService {
         String groupId = publicId(5);
         Grouplist grouplist = repository.insert(new Grouplist(groupId, title));
 
-        mongoTemplate.update(Student.class)
+        mongoTemplate.update(User.class)
             .matching(Criteria.where("userId").is(userId))
             .apply(new Update().push("grouplists").value(grouplist))
             .first();
@@ -115,7 +116,7 @@ public class GrouplistService {
         mongoTemplate.findAndModify(
                 query("userId", userId), 
                 pullUpdate("checklists", checklist), 
-                Student.class);
+                User.class);
 
         if(mongoTemplate.exists(query("groupId", groupId), Grouplist.class)) {
             return mongoTemplate.findAndModify(
@@ -142,7 +143,7 @@ public class GrouplistService {
             mongoTemplate.findAndModify(
                     query("userId", userId), 
                     pushUpdate("checklists", checklist), 
-                    Student.class);
+                    User.class);
 
             return mongoTemplate.findAndModify(
                 query("groupId", groupId), 
@@ -177,7 +178,7 @@ public class GrouplistService {
                 mongoTemplate.findAndModify(
                         query("userId", userId), 
                         pushUpdate("checklists", list), 
-                        Student.class);
+                        User.class);
             }
         }
 

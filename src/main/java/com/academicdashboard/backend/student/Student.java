@@ -2,7 +2,7 @@ package com.academicdashboard.backend.student;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.academicdashboard.backend.user.Profile;
+import com.academicdashboard.backend.user.UserType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Student extends Profile {
+public class Student extends UserType {
 
     //Student Specific Information
     private String gradeLvl;
