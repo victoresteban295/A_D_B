@@ -2,7 +2,6 @@ package com.academicdashboard.backend.checklist;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,12 +12,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/stud/grouplist")
+@RequiredArgsConstructor
 public class GrouplistController {
 
-    @Autowired
-    private GrouplistService service;
+    private final GrouplistService grouplistService;
 
     //Create New Grouplist | Returns Grouplist Created
     @PostMapping("/new/{userId}")
@@ -27,7 +28,7 @@ public class GrouplistController {
             @PathVariable String userId) {
 
         return new ResponseEntity<Grouplist>(
-            service.createGrouplist(
+            grouplistService.createGrouplist(
                 userId,
                 payload.get("title")
             ),
@@ -41,7 +42,7 @@ public class GrouplistController {
             @PathVariable String groupId) {
 
         return new ResponseEntity<Grouplist>(
-            service.modifyGrouplist(
+            grouplistService.modifyGrouplist(
                     groupId,
                     payload.get("title")
                 ),
@@ -55,7 +56,7 @@ public class GrouplistController {
             @PathVariable String groupId) {
 
         return new ResponseEntity<Grouplist>(
-            service.addNewToGrouplist(
+            grouplistService.addNewToGrouplist(
                 groupId,
                 payload.get("title")
                 ),
@@ -69,7 +70,7 @@ public class GrouplistController {
             @PathVariable String userId) {
 
         return new ResponseEntity<Grouplist>(
-            service.addExistToGrouplist(
+            grouplistService.addExistToGrouplist(
                 userId, 
                 payload.get("groupId"), 
                 payload.get("listId")
@@ -84,7 +85,7 @@ public class GrouplistController {
             @PathVariable String userId) {
 
         return new ResponseEntity<Grouplist>(
-            service.removefromGrouplist(
+            grouplistService.removefromGrouplist(
                 userId, 
                 payload.get("groupId"), 
                 payload.get("listId")
@@ -100,7 +101,7 @@ public class GrouplistController {
             @RequestBody Condition condition, 
             @PathVariable String userId) {
 
-        service.deleteGrouplist(userId, condition.groupId(), condition.deleteAll());
+        grouplistService.deleteGrouplist(userId, condition.groupId(), condition.deleteAll());
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 

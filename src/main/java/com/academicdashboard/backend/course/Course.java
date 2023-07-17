@@ -7,18 +7,14 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-import com.academicdashboard.backend.student.Student;
+import com.academicdashboard.backend.user.User;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Document(collection = "course")
-@Getter
-@Setter
-@EqualsAndHashCode
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Course {
@@ -45,7 +41,7 @@ public class Course {
 
     //Data Relationships
     @DocumentReference
-    private List<Student> students;
+    private List<User> students;
 
     @DocumentReference
     private List<Syllabus> syllabusSection;

@@ -1,22 +1,22 @@
-package com.academicdashboard.backend.professor;
+package com.academicdashboard.backend.profile;
 
 import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.academicdashboard.backend.user.UserType;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Document(collection = "professor")
 @Data
+@SuperBuilder //Experimental
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Professor extends UserType {
+public class Professor extends Profile {
 
     //Professor Specific Information
     private String department;
@@ -26,5 +26,4 @@ public class Professor extends UserType {
     private String officeRoom;
     private String researchArea;
     private List<OfficeHrs> officeHrs;
-
 }

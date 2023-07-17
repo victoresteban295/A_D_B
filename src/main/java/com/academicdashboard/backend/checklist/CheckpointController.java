@@ -2,7 +2,6 @@ package com.academicdashboard.backend.checklist;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,12 +12,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/stud/checkpoint")
+@RequiredArgsConstructor
 public class CheckpointController {
 
-    @Autowired
-    private CheckpointService service;
+    private final CheckpointService checkpointService;
 
     //Create New Checkpoint Into Existing Checklist | Returns Checklist
     @PostMapping("/new/{listId}")
@@ -27,7 +28,7 @@ public class CheckpointController {
             @PathVariable String listId) {
         
         return new ResponseEntity<Checklist>(
-            service.addCheckpoint(listId, payload.get("content")), 
+            checkpointService.addCheckpoint(listId, payload.get("content")), 
             HttpStatus.CREATED);
     }
 
@@ -38,7 +39,7 @@ public class CheckpointController {
             @PathVariable String pointId) {
 
         return new ResponseEntity<Checkpoint>(
-                service.modifyCheckpoint(
+                checkpointService.modifyCheckpoint(
                     pointId, 
                     payload.get("content")
                 ),
@@ -50,7 +51,7 @@ public class CheckpointController {
     public ResponseEntity<Void> deleteCheckpoint(
             @PathVariable String pointId) {
 
-        service.deleteCheckpoint(pointId);
+        checkpointService.deleteCheckpoint(pointId);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 
@@ -61,7 +62,7 @@ public class CheckpointController {
             @PathVariable String listId) {
 
        return new ResponseEntity<Checkpoint>(
-                service.turnIntoSubcheckpoint(
+                checkpointService.turnIntoSubcheckpoint(
                    listId, 
                    payload.get("pointId"),
                    payload.get("subpointId")
@@ -76,7 +77,7 @@ public class CheckpointController {
             @PathVariable String pointId) {
 
         return new ResponseEntity<Checkpoint>(
-                service.newSubcheckpoint(
+                checkpointService.newSubcheckpoint(
                     pointId, 
                     payload.get("content")
                 ), 
@@ -90,7 +91,7 @@ public class CheckpointController {
             @PathVariable String listId) {
 
         return new ResponseEntity<Checklist>(
-                service.reverseSubcheckpoint(
+                checkpointService.reverseSubcheckpoint(
                     listId, 
                     payload.get("pointId"),
                     payload.get("subpointId")
@@ -104,7 +105,7 @@ public class CheckpointController {
             @PathVariable String pointId) {
 
         return new ResponseEntity<Checkpoint>(
-                service.completeCheckpoint(pointId), 
+                checkpointService.completeCheckpoint(pointId), 
                 HttpStatus.OK);
     }
 

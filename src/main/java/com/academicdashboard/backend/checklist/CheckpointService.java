@@ -3,7 +3,6 @@ package com.academicdashboard.backend.checklist;
 import java.util.Optional;
 import java.util.Random;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -14,17 +13,14 @@ import org.springframework.stereotype.Service;
 import com.academicdashboard.backend.exception.ApiRequestException;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CheckpointService {
 
-    @Autowired
-    private CheckpointRepository repository;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    private final CheckpointRepository checkpointRepository;
+    private final MongoTemplate mongoTemplate;
 
     //Create New Public Id (JNanoId)
     private static String publicId(int size) {
@@ -62,7 +58,14 @@ public class CheckpointService {
     public Checklist addCheckpoint(String listId, String content) {
         if (mongoTemplate.exists(query("listId", listId), Checklist.class)) {
             String pointId = publicId(5);
-            Checkpoint checkpoint = repository.insert(new Checkpoint(pointId, content, false, false));
+            Checkpoint checkpoint = checkpointRepository.insert(
+                    Checkpoint.builder()
+                    .pointId(pointId)
+                    .content(content)
+                    .isComplete(false)
+                    .isSubpoint(false)
+                    .build()
+                    );
             return mongoTemplate.findAndModify(
                     query("listId", listId), 
                     pushUpdate("checkpoints", checkpoint), 
@@ -145,7 +148,14 @@ public class CheckpointService {
         if(mongoTemplate.exists(query("pointId", pointId), Checkpoint.class)) {
             //Create New Checkpoint Object as Subcheckpoint
             String subpointId = publicId(5);
-            Checkpoint subcheckpoint = repository.insert(new Checkpoint(subpointId, content, false, true));
+            Checkpoint subcheckpoint = checkpointRepository.insert(
+                    Checkpoint.builder()
+                    .pointId(subpointId)
+                    .content(content)
+                    .isComplete(false)
+                    .isSubpoint(true)
+                    .build()
+                    );
 
             //Add Subcheckpoint to Checkpoint
             return mongoTemplate.findAndModify(

@@ -2,7 +2,6 @@ package com.academicdashboard.backend.auth;
 
 import java.util.ArrayList;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -13,51 +12,33 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.academicdashboard.backend.config.JwtService;
-import com.academicdashboard.backend.professor.Professor;
-import com.academicdashboard.backend.student.Student;
+import com.academicdashboard.backend.profile.Professor;
+import com.academicdashboard.backend.profile.Profile;
+import com.academicdashboard.backend.profile.Student;
 import com.academicdashboard.backend.token.Token;
 import com.academicdashboard.backend.token.TokenRepository;
 import com.academicdashboard.backend.user.Role;
 import com.academicdashboard.backend.user.User;
 import com.academicdashboard.backend.user.UserRepository;
-import com.academicdashboard.backend.user.UserType;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
-// @RequiredArgsConstructor
+@RequiredArgsConstructor
 public class AuthenticationService {
 
-    // private final UserRepository userRepository;
-    // private final TokenRepository tokenRepository;
-    // private final MongoTemplate mongoTemplate;
-    // private final PasswordEncoder passwordEncoder;
-    // private final JwtService jwtService;
-    // private final AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private TokenRepository tokenRepository;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final TokenRepository tokenRepository;
+    private final MongoTemplate mongoTemplate;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
     /* Register New User */
     public AuthenticationResponse register(RegisterRequest request) {
 
-        UserType profile;
+        Profile profile;
         Role role;
         String userId = NanoIdUtils.randomNanoId();
 
@@ -70,7 +51,7 @@ public class AuthenticationService {
             profile = new Professor();
             profile.setFirstName(request.getFirstName());
             profile.setLastName(request.getLastName());
-            role = Role.PROF;
+            role = Role.PROFESSOR;
         }
 
         //Create New User Using Builder

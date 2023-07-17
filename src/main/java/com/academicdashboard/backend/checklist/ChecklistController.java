@@ -2,7 +2,6 @@ package com.academicdashboard.backend.checklist;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,15 +12,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/stud/checklist")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ChecklistController {
 
-    @Autowired
-    private ChecklistService service;
+    private final ChecklistService checklistService;
 
     //Create New Checklist | Returns Checklist Created
     @PostMapping("/new/{userId}")
@@ -30,7 +28,7 @@ public class ChecklistController {
             @PathVariable String userId) {
 
         return new ResponseEntity<Checklist>(
-            service.createChecklist(
+            checklistService.createChecklist(
                     userId,
                     payload.get("title")
                 ), 
@@ -44,7 +42,7 @@ public class ChecklistController {
             @PathVariable String listId) {
 
         return new ResponseEntity<Checklist>(
-            service.modifyChecklist(
+            checklistService.modifyChecklist(
                     listId,
                     payload.get("title")
                 ),
@@ -56,7 +54,7 @@ public class ChecklistController {
     public ResponseEntity<Void> deleteChecklist(
             @PathVariable String listId) {
 
-        service.deleteChecklist(listId);
+        checklistService.deleteChecklist(listId);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 

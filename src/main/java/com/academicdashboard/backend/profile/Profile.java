@@ -1,4 +1,4 @@
-package com.academicdashboard.backend.user;
+package com.academicdashboard.backend.profile;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -6,11 +6,13 @@ import org.springframework.data.annotation.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
+@SuperBuilder //Experimental
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserType {
+public class Profile {
 
     @Id
     private ObjectId id; //MongoDB ObjectId
@@ -23,5 +25,4 @@ public class UserType {
     private String birthMonth; 
     private int birthDay;
     private int birthYear;
-
 }

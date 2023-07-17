@@ -1,16 +1,14 @@
-package com.academicdashboard.backend.professor;
+package com.academicdashboard.backend.profile;
 
 import java.util.List;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@EqualsAndHashCode
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class OfficeHrs {

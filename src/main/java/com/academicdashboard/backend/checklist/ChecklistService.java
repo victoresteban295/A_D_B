@@ -1,10 +1,10 @@
 package com.academicdashboard.backend.checklist;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -13,19 +13,17 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import com.academicdashboard.backend.exception.ApiRequestException;
+import com.academicdashboard.backend.user.User;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ChecklistService {
 
-    @Autowired
-    private ChecklistRepository repository;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    private final ChecklistRepository checklistRepository;
+    private final MongoTemplate mongoTemplate;
 
     //Create New Public Id (JNanoId)
     private static String publicId(int size) {
@@ -58,13 +56,19 @@ public class ChecklistService {
     //Create New Checklist | Returns Checklist Created
     public Checklist createChecklist(String userId, String title) {
         String listId = publicId(5);
-        Checklist checklist = repository.insert(new Checklist(listId, title)); //New Checklist 
+        Checklist checklist = checklistRepository
+            .insert(
+                    Checklist.builder()
+                        .listId(listId)
+                        .title(title)
+                        .checkpoints(new ArrayList<>())
+                        .build());
 
         mongoTemplate.findAndModify(
                 query("userId", userId), 
                 pushUpdate("checklists", checklist), 
                 options(true, true), 
-                com.academicdashboard.backend.student.Student.class);
+                User.class);
 
         return checklist;
     }

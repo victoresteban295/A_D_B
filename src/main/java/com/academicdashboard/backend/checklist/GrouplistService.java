@@ -1,10 +1,10 @@
 package com.academicdashboard.backend.checklist;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -14,20 +14,16 @@ import org.springframework.stereotype.Service;
 
 import com.academicdashboard.backend.exception.ApiRequestException;
 import com.academicdashboard.backend.user.User;
-// import com.academicdashboard.backend.student.Student;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class GrouplistService {
 
-    @Autowired
-    private GrouplistRepository repository;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    private final GrouplistRepository grouplistRepository;
+    private final MongoTemplate mongoTemplate;
 
     //Create New Public Id (JNanoId)
     private static String publicId(int size) {
@@ -64,7 +60,13 @@ public class GrouplistService {
     //Create New Grouplist | Returns Grouplist Created
     public Grouplist createGrouplist(String userId, String title) {
         String groupId = publicId(5);
-        Grouplist grouplist = repository.insert(new Grouplist(groupId, title));
+        Grouplist grouplist = grouplistRepository.insert(
+                Grouplist.builder()
+                .groupId(groupId)
+                .title(title)
+                .checklists(new ArrayList<>())
+                .build()
+                );
 
         mongoTemplate.update(User.class)
             .matching(Criteria.where("userId").is(userId))
@@ -90,7 +92,13 @@ public class GrouplistService {
     //Add New Checklist to Grouplist | Returns Grouplist
     public Grouplist addNewToGrouplist(String groupId, String listTitle) {
         String listId = publicId(5);
-        Checklist checklist = mongoTemplate.insert(new Checklist(listId, listTitle));
+        Checklist checklist = mongoTemplate.insert(
+                Checklist.builder()
+                .listId(listId)
+                .title(listTitle)
+                .checkpoints(new ArrayList<>())
+                .build()
+                );
 
         if(mongoTemplate.exists(query("groupId", groupId), Grouplist.class)) {
             return mongoTemplate.findAndModify(

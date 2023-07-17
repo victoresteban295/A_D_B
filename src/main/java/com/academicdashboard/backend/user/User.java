@@ -1,6 +1,5 @@
 package com.academicdashboard.backend.user;
 
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
@@ -13,9 +12,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.academicdashboard.backend.calendar.Calendar;
 import com.academicdashboard.backend.checklist.Checklist;
 import com.academicdashboard.backend.checklist.Grouplist;
 import com.academicdashboard.backend.course.Course;
+import com.academicdashboard.backend.profile.Profile;
 import com.academicdashboard.backend.reminder.ReminderList;
 import com.academicdashboard.backend.token.Token;
 
@@ -57,7 +58,7 @@ public class User implements UserDetails {
     private String schoolId;
 
     @DocumentReference
-    private UserType profile;
+    private Profile profile;
 
     //Data Relationships
 
