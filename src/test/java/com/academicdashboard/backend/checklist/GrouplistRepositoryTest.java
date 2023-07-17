@@ -33,7 +33,6 @@ public class GrouplistRepositoryTest {
                 grouplistRepository, 
                 checklistRepository, 
                 checkpointRepository);
-
         testData.populateDatabase();
     }
 
