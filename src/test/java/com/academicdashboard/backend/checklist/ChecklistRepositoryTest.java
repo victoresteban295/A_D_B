@@ -1,69 +1,63 @@
 package com.academicdashboard.backend.checklist;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import lombok.RequiredArgsConstructor;
+import com.academicdashboard.backend.user.UserRepository;
 
-@Disabled
-@Testcontainers //Register Testcontainer
+@Testcontainers 
 @DataMongoTest
-@RequiredArgsConstructor
 public class ChecklistRepositoryTest {
 
-    @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.6");
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private GrouplistRepository grouplistRepository;
+    @Autowired
+    private ChecklistRepository checklistRepository;
+    @Autowired
+    private CheckpointRepository checkpointRepository;
 
-    @DynamicPropertySource
-    static void setProperties(DynamicPropertyRegistry registry) {
-        //Override the "spring.data.mongodb.uri" to point to the local database container
-        //The Testcontainer exposes a random ephemeral port)
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+    private TestData testData;
+
+    @BeforeEach
+    public void setUp() {
+        this.testData = new TestData(
+                userRepository, 
+                grouplistRepository, 
+                checklistRepository, 
+                checkpointRepository);
+        testData.populateDatabase();
     }
-
-    private final ChecklistRepository checklistRepository;
 
     @AfterEach
     public void cleanup() {
-        this.checklistRepository.deleteAll();
-    }
-
-    @Test
-    @DisplayName("Should Insert Checklist to Repository")
-    public void canInsertChecklistToRepository() {
-        Checklist expectedValue = Checklist.builder()
-            .listId("id01")
-            .title("title01")
-            .checkpoints(new ArrayList<>())
-            .build();
-
-        this.checklistRepository.insert(expectedValue);
-        List<Checklist> checklists = checklistRepository.findAll();
-        Assertions.assertThat(checklists.contains(expectedValue)).isTrue();  
+        testData.cleanupDatabase();
     }
 
     @Test
     @DisplayName("Should Find Checklist Using ListId")
     public void canFindChecklistByListId() {
-        Checklist expectedValue = Checklist.builder()
-            .listId("id01")
-            .title("title01")
-            .checkpoints(new ArrayList<>())
-            .build();
-        this.checklistRepository.insert(expectedValue);
-        Checklist returnedValue = checklistRepository.findChecklistByListId("id01").get(); 
-        Assertions.assertThat(returnedValue.getTitle()).isEqualTo(expectedValue.getTitle());
+        //When
+        Checklist returnedValue01 = checklistRepository.findChecklistByListId("listIdA1").get();
+        Checklist returnedValue02 = checklistRepository.findChecklistByListId("listIdA2").get();
+        Checklist returnedValue03 = checklistRepository.findChecklistByListId("listIdB1").get();
+        Checklist returnedValue04 = checklistRepository.findChecklistByListId("listIdB2").get();
+        Checklist returnedValue05 = checklistRepository.findChecklistByListId("listIdC1").get();
+        Checklist returnedValue06 = checklistRepository.findChecklistByListId("listIdD").get();
+
+        //Then
+        Assertions.assertThat(returnedValue01.getTitle()).isEqualTo("Checklist TitleA1");
+        Assertions.assertThat(returnedValue02.getTitle()).isEqualTo("Checklist TitleA2");
+        Assertions.assertThat(returnedValue03.getTitle()).isEqualTo("Checklist TitleB1");
+        Assertions.assertThat(returnedValue04.getTitle()).isEqualTo("Checklist TitleB2");
+        Assertions.assertThat(returnedValue05.getTitle()).isEqualTo("Checklist TitleC1");
+        Assertions.assertThat(returnedValue06.getTitle()).isEqualTo("Checklist TitleD");
     }
 }

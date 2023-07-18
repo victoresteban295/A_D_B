@@ -98,7 +98,14 @@ public class ChecklistService {
 
         List<Checkpoint> checkpoints = checklist.getCheckpoints(); 
         for(Checkpoint point : checkpoints) {
-           mongoTemplate.remove(query("pointId", point.getPointId()), Checkpoint.class);
+            //Remove any subcheckpoints
+            if(!point.getSubCheckpoints().isEmpty()) {
+                List<Checkpoint> subpoints = point.getSubCheckpoints();
+                for(Checkpoint subpoint : subpoints) {
+                    mongoTemplate.remove(query("pointId", subpoint.getPointId()), Checkpoint.class);
+                }
+            }
+            mongoTemplate.remove(query("pointId", point.getPointId()), Checkpoint.class);
         }
 
         //Delete Checklist

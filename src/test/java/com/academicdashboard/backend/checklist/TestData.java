@@ -13,6 +13,41 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class TestData {
+    /*
+     * Grouplist's Id (2)
+     *      - groupIdA 
+     *      - groupIdB
+     *
+     * Checklist's Id (6)
+     *      - listIdA1
+     *      - listIdA2
+     *      - listIdB1
+     *      - listIdB2
+     *      - listIdC1
+     *      - listIdD
+     *
+     * Checkpoint's Id (12)
+     *      - pointIdA11
+     *      - pointIdA12
+     *      - pointIdA21
+     *      - pointIdA22
+     *      - pointIdB11
+     *      - pointIdB12
+     *      - pointIdB21
+     *      - pointIdB22
+     *      - pointIdC11
+     *      - pointIdC12
+     *      - pointIdD1
+     *      - pointIdD2
+     *
+     * Subcheckpoint's Id (6)
+     *      - pointIdA11A
+     *      - pointIdA11B
+     *      - pointIdB11A
+     *      - pointIdB11B
+     *      - pointIdC11A
+     *      - pointIdC11B
+     * */
 
     private final UserRepository userRepository;
     private final GrouplistRepository grouplistRepository;
@@ -95,8 +130,8 @@ public class TestData {
                 .build());
 
         List<Checkpoint> A2Checkpoints = new ArrayList<>();
-        A1Checkpoints.add(checkpointA21);
-        A1Checkpoints.add(checkpointA22);
+        A2Checkpoints.add(checkpointA21);
+        A2Checkpoints.add(checkpointA22);
 
         Checklist checklistA2 = checklistRepository.insert(
                 Checklist.builder()
@@ -134,8 +169,8 @@ public class TestData {
                 .build());
 
         List<Checkpoint> B11Subcheckpoints = new ArrayList<>();
-        A11Subcheckpoints.add(subcheckpointB11A);
-        A11Subcheckpoints.add(subcheckpointB11B);
+        B11Subcheckpoints.add(subcheckpointB11A);
+        B11Subcheckpoints.add(subcheckpointB11B);
 
         Checkpoint checkpointB11 = checkpointRepository.insert(
                 Checkpoint.builder()
@@ -155,8 +190,8 @@ public class TestData {
                 .build());
 
         List<Checkpoint> B1Checkpoints = new ArrayList<>();
-        A1Checkpoints.add(checkpointB11);
-        A1Checkpoints.add(checkpointB12);
+        B1Checkpoints.add(checkpointB11);
+        B1Checkpoints.add(checkpointB12);
 
         Checklist checklistB1 = checklistRepository.insert(
                 Checklist.builder()
@@ -183,8 +218,8 @@ public class TestData {
                 .build());
 
         List<Checkpoint> B2Checkpoints = new ArrayList<>();
-        A1Checkpoints.add(checkpointB21);
-        A1Checkpoints.add(checkpointB22);
+        B2Checkpoints.add(checkpointB21);
+        B2Checkpoints.add(checkpointB22);
 
         Checklist checklistB2 = checklistRepository.insert(
                 Checklist.builder()
@@ -194,8 +229,8 @@ public class TestData {
                 .build());
 
         List<Checklist> BChecklist = new ArrayList<>();
-        AChecklist.add(checklistB1);
-        AChecklist.add(checklistB2);
+        BChecklist.add(checklistB1);
+        BChecklist.add(checklistB2);
 
         Grouplist grouplistB = grouplistRepository.insert(
                 Grouplist.builder()
@@ -292,10 +327,10 @@ public class TestData {
         userRepository.insert(
                 User.builder()
                 .userId("ju7db63uy678erdybncpo")
-                .firstname("Tony")
-                .lastname("Stark")
-                .email("tonystark@email.com")
-                .username("tonystark295")
+                .firstname("Test")
+                .lastname("User")
+                .email("testuser@email.com")
+                .username("testuser")
                 .checklists(checklists)
                 .grouplists(grouplists)
                 .build());
