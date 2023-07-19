@@ -1,5 +1,6 @@
 package com.academicdashboard.backend.checklist;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -35,9 +36,9 @@ public class CheckpointService {
     } 
 
     /*********** UPDATE DEFINITION METHODS ***********/
-    private static Update setUpdate(String field, String value) {
-        return new Update().set(field, value);
-    }
+    // private static Update setUpdate(String field, String value) {
+    //     return new Update().set(field, value);
+    // }
 
     private static Update pushUpdate(String field, Checkpoint checkpoint) {
         return new Update().push(field).value(checkpoint);
@@ -78,66 +79,60 @@ public class CheckpointService {
 
     //Modify Existing Checkpoint | Returns Modified Checkpoint
     public Checkpoint modifyCheckpoint(String pointId, String content) {
-        if (mongoTemplate.exists(query("pointId", pointId), Checkpoint.class)) {
-            return mongoTemplate.findAndModify(
-                    query("pointId",pointId), 
-                    setUpdate("content", content), 
-                    options(true, true), 
-                    Checkpoint.class);
-        } else {
-            throw new ApiRequestException("Checkpoint You Provided Doesn't Exist");
-        }
+        Checkpoint checkpoint = checkpointRepository
+            .findCheckpointByPointId(pointId)
+            .orElseThrow(() -> new ApiRequestException("Checkpoint You Provided Doesn't Exist"));
+        checkpoint.setContent(content);
+        return checkpointRepository.save(checkpoint);
     }
 
     //Delete Checkpoint | Void
     //NOTE: Deleteing Checkpoint Automatically Removes its Reference in Checklist
     public void deleteCheckpoint(String pointId) {
-        Query query = query("pointId", pointId);
-
-        //Does Checkpoint Exist?
-        Optional.ofNullable(
-                mongoTemplate.findOne(
-                    query, 
-                    Checkpoint.class))
+        Checkpoint checkpoint = checkpointRepository
+            .findCheckpointByPointId(pointId)
             .orElseThrow(() -> new ApiRequestException("Checkpoint You Wanted to Delete Doesn't Exist"));
 
-        //Delete Checkpoint
-        mongoTemplate.remove(
-                query, 
-                Checkpoint.class);
+        //Delete Subcheckpoints 
+        if(!checkpoint.getSubCheckpoints().isEmpty()) {
+            List<Checkpoint> subpoints = checkpoint.getSubCheckpoints();
+            for(Checkpoint subpoint : subpoints) {
+                checkpointRepository.delete(subpoint);
+            }
+            checkpointRepository.delete(checkpoint);
+        } else {
+            checkpointRepository.delete(checkpoint);
+        }
     }
 
     //Existing Checkpoint to Subcheckpoint | Return Checkpoint w/ Subpoints
     public Checkpoint turnIntoSubcheckpoint(String listId, String pointId, String subpointId) {
         if(mongoTemplate.exists(query("listId", listId), Checklist.class)) {
-            if(mongoTemplate.exists(query("pointId", subpointId), Checkpoint.class)) {
-                Checkpoint subpoint = mongoTemplate.findAndModify(
-                        query("pointId", subpointId), 
-                        new Update().set("isSubpoint", true), 
-                        options(true, true), 
-                        Checkpoint.class);
+            Checkpoint checkpoint = checkpointRepository
+                .findCheckpointByPointId(pointId)
+                .orElseThrow(() -> new ApiRequestException("Parent Checkpoint You Provided Doesn't Exist"));
 
-                //Remove from Checklist's checkpoints atrribute
+            Checkpoint subcheckpoint = checkpointRepository
+                .findCheckpointByPointId(subpointId)
+                .orElseThrow(() -> new ApiRequestException("SubCheckpoint You Provided Doesn't Exist"));
+
+            if(!checkpoint.isSubpoint() || !subcheckpoint.isSubpoint()) {
+                //Remove from Checklist's checkpoints attribute
                 mongoTemplate.findAndModify(
                         query("listId", listId), 
-                        pullUpdate("checkpoints", subpoint), 
+                        pullUpdate("checkpoints", subcheckpoint), 
                         Checklist.class);
-
-                if(mongoTemplate.exists(query("pointId", pointId), Checkpoint.class)) {
-                    //Add SubCheckpoint to Checkpoint
-                    return mongoTemplate.findAndModify(
-                            query("pointId", pointId), 
-                            pushUpdate("subCheckpoints", subpoint), 
-                            options(true, true), 
-                            Checkpoint.class);
-                } else {
-                    throw new ApiRequestException("Parent Checkpoint You Provided Doesn't Exist");
-                }
-
+                subcheckpoint.setSubpoint(true); //Stamp as Subpoint
+                //Insert to Checkpoint's subcheckpoints attribute
+                subcheckpoint = checkpointRepository.save(subcheckpoint);
+                return mongoTemplate.findAndModify(
+                        query("pointId", pointId), 
+                        pushUpdate("subCheckpoints", subcheckpoint), 
+                        options(true, true), 
+                        Checkpoint.class);
             } else {
-                throw new ApiRequestException("SubCheckpoint You Provided Doesn't Exist");
+                throw new ApiRequestException("Cannot add Subcheckpoint Under a Subcheckpoint");
             }
-
         } else {
             throw new ApiRequestException("Checklist You Provided Doesn't Exist");
         }
@@ -170,34 +165,61 @@ public class CheckpointService {
 
     //Subcheckpoint to Checkpoint | Return Checklist
     public Checklist reverseSubcheckpoint(String listId, String pointId, String subpointId) {
-        //Get Existing SubCheckpoint
-        Checkpoint subpoint = Optional.ofNullable(
-            mongoTemplate.findOne(
-                    query("pointId", subpointId), 
-                    Checkpoint.class))
-            .orElseThrow(() -> new ApiRequestException("SubCheckpoint You Provided Doesn't Exist"));
-
-        if(mongoTemplate.exists(query("pointId", pointId), Checkpoint.class)) {
+        if(mongoTemplate.exists(query("listId", listId), Checklist.class)) {
+            Checkpoint subpoint = checkpointRepository
+                .findCheckpointByPointId(subpointId)
+                .orElseThrow(() -> new ApiRequestException("SubCheckpoint You Provided Doesn't Exist"));
+            checkpointRepository
+                .findCheckpointByPointId(pointId)
+                .orElseThrow(() -> new ApiRequestException("Parent Checkpoint You Provided Doesn't Exist"));
+            
             //Remove from Checkpoint's checkpoints atrribute
             mongoTemplate.findAndModify(
                     query("pointId", pointId), 
                     pullUpdate("subCheckpoints", subpoint), 
                     Checkpoint.class);
-
-            if(mongoTemplate.exists(query("listId", listId), Checklist.class)) {
-                //Add SubCheckpoint back to Checklist
-                return mongoTemplate.findAndModify(
-                        query("listId", listId), 
-                        pushUpdate("checkpoints", subpoint), 
-                        options(true, true), 
-                        Checklist.class);
-            } else {
-                throw new ApiRequestException("Checklist You Provided Doesn't Exist");
-            }
+            subpoint.setSubpoint(false); //Stamp as Checkpoint
+            subpoint = checkpointRepository.save(subpoint);
+            return mongoTemplate.findAndModify(
+                    query("listId", listId), 
+                    pushUpdate("checkpoints", subpoint), 
+                    options(true, true), 
+                    Checklist.class);
         } else {
-            throw new ApiRequestException("Parent Checkpoint You Provided Doesn't Exist");
+            throw new ApiRequestException("Checklist You Provided Doesn't Exist");
         }
     }
+
+    // //Subcheckpoint to Checkpoint | Return Checklist
+    // public Checklist reverseSubcheckpoint(String listId, String pointId, String subpointId) {
+    //     //Get Existing SubCheckpoint
+    //     Checkpoint subpoint = Optional.ofNullable(
+    //         mongoTemplate.findOne(
+    //                 query("pointId", subpointId), 
+    //                 Checkpoint.class))
+    //         .orElseThrow(() -> new ApiRequestException("SubCheckpoint You Provided Doesn't Exist"));
+    //
+    //     if(mongoTemplate.exists(query("pointId", pointId), Checkpoint.class)) {
+    //         //Remove from Checkpoint's checkpoints atrribute
+    //         mongoTemplate.findAndModify(
+    //                 query("pointId", pointId), 
+    //                 pullUpdate("subCheckpoints", subpoint), 
+    //                 Checkpoint.class);
+    //
+    //         if(mongoTemplate.exists(query("listId", listId), Checklist.class)) {
+    //             //Add SubCheckpoint back to Checklist
+    //             return mongoTemplate.findAndModify(
+    //                     query("listId", listId), 
+    //                     pushUpdate("checkpoints", subpoint), 
+    //                     options(true, true), 
+    //                     Checklist.class);
+    //         } else {
+    //             throw new ApiRequestException("Checklist You Provided Doesn't Exist");
+    //         }
+    //     } else {
+    //         throw new ApiRequestException("Parent Checkpoint You Provided Doesn't Exist");
+    //     }
+    // }
 
     //Check off Complete Property on Checkpoint | Return Checkpoint
     public Checkpoint completeCheckpoint(String pointId) {

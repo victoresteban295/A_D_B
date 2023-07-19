@@ -1,655 +1,270 @@
-// package com.academicdashboard.backend.checklist;
-//
-// import java.util.ArrayList;
-// import java.util.List;
-//
-// import org.assertj.core.api.Assertions;
-// import org.junit.jupiter.api.AfterEach;
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.DisplayName;
-// import org.junit.jupiter.api.Test;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-// import org.springframework.data.mongodb.core.MongoTemplate;
-// import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
-// import org.springframework.test.context.DynamicPropertyRegistry;
-// import org.springframework.test.context.DynamicPropertySource;
-// import org.testcontainers.containers.MongoDBContainer;
-// import org.testcontainers.junit.jupiter.Container;
-// import org.testcontainers.junit.jupiter.Testcontainers;
-//
-// import com.academicdashboard.backend.exception.ApiRequestException;
-// import com.academicdashboard.backend.user.User;
-// import com.academicdashboard.backend.user.UserRepository;
-//
-// @Testcontainers
-// @DataMongoTest
-// @EnableMongoRepositories
-// public class GrouplistServiceTest {
-//
-//     @Container
-//     static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.6");
-//
-//     @DynamicPropertySource
-//     static void setProperties(DynamicPropertyRegistry registry) {
-//         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
-//     }
-//
-//     @Autowired
-//     private MongoTemplate mongoTemplate;
-//
-//     @Autowired
-//     private GrouplistRepository grouplistRepository;
-//
-//     @Autowired
-//     private UserRepository userRepository;
-//
-//     @Autowired //added
-//     private GrouplistService grouplistService;
-//
-//     @BeforeEach
-//     public void setUp() {
-//         this.grouplistService = new GrouplistService(
-//                 grouplistRepository,
-//                 mongoTemplate);
-//
-//         User user = User.builder()
-//             .userId("ju7db63uy678erdybncpo")
-//             .firstname("Tony")
-//             .lastname("Stark")
-//             .email("tonystark@email.com")
-//             .username("tonystark295")
-//             .checklists(new ArrayList<>())
-//             .grouplists(new ArrayList<>())
-//             .build();
-//
-//         Grouplist grouplistA = Grouplist.builder()
-//             .groupId("groupIdA")
-//             .title("Grouplist TitleA")
-//             .checklists(new ArrayList<>())
-//             .build();
-//
-//         Grouplist grouplistB = Grouplist.builder()
-//             .groupId("groupIdB")
-//             .title("Grouplist TitleB")
-//             .checklists(new ArrayList<>())
-//             .build();
-//
-//         Checklist checklistA1 = Checklist.builder()
-//             .listId("listIdA1")
-//             .title("Checklist TitleA1")
-//             .checkpoints(new ArrayList<>())
-//             .build();
-//
-//         Checklist checklistA2 = Checklist.builder()
-//             .listId("listIdA2")
-//             .title("Checklist TitleA2")
-//             .checkpoints(new ArrayList<>())
-//             .build();
-//
-//         Checklist checklistB1 = Checklist.builder()
-//             .listId("listIdB1")
-//             .title("Checklist TitleB1")
-//             .checkpoints(new ArrayList<>())
-//             .build();
-//
-//         Checklist checklistB2 = Checklist.builder()
-//             .listId("listIdB2")
-//             .title("Checklist TitleB2")
-//             .checkpoints(new ArrayList<>())
-//             .build();
-//
-//         Checklist checklistC1 = Checklist.builder()
-//             .listId("listIdC1")
-//             .title("Checklist TitleC1")
-//             .checkpoints(new ArrayList<>())
-//             .build();
-//
-//         Checklist checklistD1 = Checklist.builder()
-//             .listId("listIdD1")
-//             .title("Checklist TitleD1")
-//             .checkpoints(new ArrayList<>())
-//             .build();
-//     }
-//
-//     @AfterEach
-//     public void cleanup() {
-//         this.grouplistRepository.deleteAll();
-//         mongoTemplate.dropCollection(Checklist.class);
-//         mongoTemplate.createCollection(Checklist.class);
-//         mongoTemplate.dropCollection(Student.class);
-//         mongoTemplate.createCollection(Student.class);
-//     }
-//
-//     @Test
-//     @DisplayName("Should Create a New Grouplist Under Student")
-//     public void shouldCreateNewGrouplist() {
-//
-//         //Create New User
-//         var user = User.builder()
-//             .userId("123973789abjdrfklwi75")
-//             .firstname("Victor")
-//             .lastname("Benitez")
-//             .checklists(new ArrayList<>())
-//             .grouplists(new ArrayList<>())
-//             .build();
-//         userRepository.save(user);
-//         
-//         //When
-//         grouplistService.createGrouplist("123973789abjdrfklwi75", "grouplistTitle");
-//
-//         //Then
-//         Assertions.assertThat(grouplistRepository.findAll().get(0).getTitle())
-//             .isEqualTo("grouplistTitle");
-//
-//         Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getGrouplists().get(0).getTitle())
-//             .isEqualTo("grouplistTitle");
-//
-//         userRepository.delete(user);
-//     }
-//
-//     @Test
-//     @DisplayName("Should Modify an Existing Grouplist")
-//     public void modifyExistingGrouplistTitle() {
-//         //Given
-//         this.grouplistRepository.insert(new Grouplist("12345", "Old Grouplist"));
-//
-//         //When 
-//         grouplistService.modifyGrouplist("12345", "New Grouplist Title");
-//
-//         //Then
-//         Grouplist returnedValue = this.grouplistRepository.findGrouplistByGroupId("12345").get(); 
-//         Assertions.assertThat(returnedValue.getTitle()).isEqualTo("New Grouplist Title");
-//     }
-//
-//     @Test
-//     @DisplayName("Should Throw an ApiRequestException When Modifying Non-existent Grouplist")
-//     public void throwExceptionModifyingNonexistentGrouplist() {
-//         //Given
-//         this.grouplistRepository.insert(new Grouplist("id01", "title01"));
-//         this.grouplistRepository.insert(new Grouplist("id02", "title02"));
-//         this.grouplistRepository.insert(new Grouplist("id03", "title03"));
-//
-//         //Then
-//         Assertions.assertThatThrownBy(() -> {
-//             grouplistService.modifyGrouplist("id04", "title04");
-//         }).isInstanceOf(ApiRequestException.class)
-//             .hasMessage("Grouplist You Wanted to Modify Doesn't Exist");
-//     }
-//
-//     @Test
-//     @DisplayName("Should Create a New Checklist Under an Existing Grouplist")
-//     public void createNewChecklistUnderExistingGrouplist() {
-//         //Given
-//         this.grouplistRepository.insert(new Grouplist("id001", "Grouplist Title01"));
-//         this.grouplistRepository.insert(new Grouplist("id002", "Grouplist Title02"));
-//         this.grouplistRepository.insert(new Grouplist("id003", "Grouplist Title03"));
-//
-//         //When 
-//         grouplistService.addNewToGrouplist("id001", "Checklist Title");
-//
-//         //Then
-//         Grouplist returnedValue = this.grouplistRepository.findGrouplistByGroupId("id001").get();
-//         Assertions.assertThat(returnedValue.getChecklists().get(0).getTitle()).isEqualTo("Checklist Title");
-//         Assertions.assertThat(mongoTemplate.findAll(Checklist.class).size()).isEqualTo(1); //Assert No Duplication
-//     }
-//
-//     @Test
-//     @DisplayName("Should Throw an ApiRequestException When Adding New Checklist to Non-existent Grouplist")
-//     public void throwExceptionAddingNewChecklistToNonExistingGrouplist() {
-//         //Given
-//         this.grouplistRepository.insert(new Grouplist("id001", "Grouplist Title01"));
-//         this.grouplistRepository.insert(new Grouplist("id002", "Grouplist Title02"));
-//         this.grouplistRepository.insert(new Grouplist("id003", "Grouplist Title03"));
-//
-//         //Then
-//         Assertions.assertThatThrownBy(() -> {
-//             grouplistService.addNewToGrouplist("id004", "Checklist Title");
-//         }).isInstanceOf(ApiRequestException.class)
-//             .hasMessage("Grouplist You Wanted to Modify Doesn't Exist");
-//     }
-//
-//
-//     @Test
-//     @DisplayName("Should Add an Existing Checklist Under an Existing Grouplist")
-//     public void addExistingChecklistUnderExistingGrouplist() {
-//         //Given
-//         var user = User.builder()
-//             .userId("123973789abjdrfklwi75")
-//             .firstname("Victor")
-//             .lastname("Benitez")
-//             .checklists(new ArrayList<>())
-//             .grouplists(new ArrayList<>())
-//             .build();
-//
-//         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
-//         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
-//         Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
-//         mongoTemplate.insert(checklist01);
-//         mongoTemplate.insert(checklist02);
-//         mongoTemplate.insert(checklist03);
-//
-//         List<Checklist> checklists = new ArrayList<>();
-//         checklists.add(checklist01);
-//         checklists.add(checklist02);
-//         checklists.add(checklist03);
-//
-//         user.setChecklists(checklists);
-//         userRepository.save(user);
-//
-//         this.grouplistRepository.insert(new Grouplist("gId01", "Grouplist Title01"));
-//         this.grouplistRepository.insert(new Grouplist("gId02", "Grouplist Title02"));
-//         this.grouplistRepository.insert(new Grouplist("gId03", "Grouplist Title03"));
-//
-//         //When 
-//         grouplistService.addExistToGrouplist("123973789abjdrfklwi75", "gId02", "lId03");
-//
-//         //Then
-//         Grouplist returnedValue = this.grouplistRepository.findGrouplistByGroupId("gId02").get();
-//         Assertions.assertThat(returnedValue.getChecklists().get(0).getTitle()).isEqualTo("Checklist Title 03");
-//         Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getChecklists().size()).isEqualTo(2);
-//     }
-//
-//     @Test
-//     @DisplayName("Should Throw Exception When Adding a Non-Existent Checklist Under an Existing Grouplist")
-//     public void shouldThrowExceptionAddingNonExistentChecklistUnderExistingGrouplist() {
-//         //Given
-//         var user = User.builder()
-//             .userId("123973789abjdrfklwi75")
-//             .firstname("Victor")
-//             .lastname("Benitez")
-//             .checklists(new ArrayList<>())
-//             .grouplists(new ArrayList<>())
-//             .build();
-//
-//         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
-//         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
-//         Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
-//         mongoTemplate.insert(checklist01);
-//         mongoTemplate.insert(checklist02);
-//         mongoTemplate.insert(checklist03);
-//
-//         List<Checklist> checklists = new ArrayList<>();
-//         checklists.add(checklist01);
-//         checklists.add(checklist02);
-//         checklists.add(checklist03);
-//
-//         user.setChecklists(checklists);
-//         userRepository.save(user);
-//
-//         this.grouplistRepository.insert(new Grouplist("gId01", "Grouplist Title01"));
-//         this.grouplistRepository.insert(new Grouplist("gId02", "Grouplist Title02"));
-//         this.grouplistRepository.insert(new Grouplist("gId03", "Grouplist Title03"));
-//
-//         //Then
-//         Assertions.assertThatThrownBy(() -> {
-//             grouplistService.addExistToGrouplist("123973789abjdrfklwi75", "gId02", "lId04");
-//         }).isInstanceOf(ApiRequestException.class)
-//             .hasMessage("Checklist You Wanted to Modify Doesn't Exist");
-//     }
-//
-//     @Test
-//     @DisplayName("Should Throw Exception When Adding an Existent Checklist Under a Non-Existent Grouplist")
-//     public void shouldThrowExceptionAddingExistingChecklistUnderNonExistentGrouplist() {
-//         //Given
-//         var user = User.builder()
-//             .userId("123973789abjdrfklwi75")
-//             .firstname("Victor")
-//             .lastname("Benitez")
-//             .checklists(new ArrayList<>())
-//             .grouplists(new ArrayList<>())
-//             .build();
-//
-//         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
-//         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
-//         Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
-//         mongoTemplate.insert(checklist01);
-//         mongoTemplate.insert(checklist02);
-//         mongoTemplate.insert(checklist03);
-//
-//         List<Checklist> checklists = new ArrayList<>();
-//         checklists.add(checklist01);
-//         checklists.add(checklist02);
-//         checklists.add(checklist03);
-//
-//         user.setChecklists(checklists);
-//         userRepository.save(user);
-//
-//         this.grouplistRepository.insert(new Grouplist("gId01", "Grouplist Title01"));
-//         this.grouplistRepository.insert(new Grouplist("gId02", "Grouplist Title02"));
-//         this.grouplistRepository.insert(new Grouplist("gId03", "Grouplist Title03"));
-//
-//         //Then
-//         Assertions.assertThatThrownBy(() -> {
-//             grouplistService.addExistToGrouplist("123973789abjdrfklwi75", "gId04", "lId03");
-//         }).isInstanceOf(ApiRequestException.class)
-//             .hasMessage("Grouplist You Wanted to Modify Doesn't Exist");
-//     }
-//
-//     @Test
-//     @DisplayName("Should Remove an Existing Checklist Under an Existing Grouplist")
-//     public void removeExistingChecklistUnderExistingGrouplist() {
-//         //Given
-//         var user = User.builder()
-//             .userId("123973789abjdrfklwi75")
-//             .firstname("Victor")
-//             .lastname("Benitez")
-//             .checklists(new ArrayList<>())
-//             .grouplists(new ArrayList<>())
-//             .build();
-//
-//         //Grouplist with Checklists
-//         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
-//
-//         //Create Different Checklists
-//         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
-//         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
-//         Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
-//         mongoTemplate.insert(checklist01);
-//         mongoTemplate.insert(checklist02);
-//         mongoTemplate.insert(checklist03);
-//
-//         //Add Checklist to List and Add to Grouplist
-//         List<Checklist> checklists = new ArrayList<>();
-//         checklists.add(checklist01);
-//         checklists.add(checklist02);
-//         checklists.add(checklist03);
-//         grouplist01.setChecklists(checklists);
-//
-//         //Create Different Grouplist & Add to Repo
-//         this.grouplistRepository.insert(grouplist01);
-//         Grouplist grouplist02 = this.grouplistRepository
-//             .insert(new Grouplist("gId02", "Grouplist Title02"));
-//         Grouplist grouplist03 = this.grouplistRepository
-//             .insert(new Grouplist("gId03", "Grouplist Title03"));
-//
-//         //Add GroupList to List
-//         List<Grouplist> grouplists = new ArrayList<>();
-//         grouplists.add(grouplist01);
-//         grouplists.add(grouplist02);
-//         grouplists.add(grouplist03);
-//
-//         user.setGrouplists(grouplists);
-//         userRepository.save(user);
-//
-//         //When 
-//         grouplistService.removefromGrouplist("123973789abjdrfklwi75", "gId01", "lId03");
-//
-//         //Then
-//         Assertions.assertThat(mongoTemplate.findAll(User.class)
-//                 .get(0).getChecklists().get(0).getTitle())
-//             .isEqualTo("Checklist Title 03");
-//         Grouplist returnedValue = this.grouplistRepository.findGrouplistByGroupId("gId01").get();
-//         Assertions.assertThat(returnedValue.getChecklists().size()).isEqualTo(2);
-//     }
-//
-//     @Test
-//     @DisplayName("Should Throw Exception When Removing a Non-Existent Checklist Under an Existing Grouplist")
-//     public void throwExceptionWhenRemovingNonExistentChecklistUnderExistingGrouplist() {
-//         //Given
-//         var user = User.builder()
-//             .userId("123973789abjdrfklwi75")
-//             .firstname("Victor")
-//             .lastname("Benitez")
-//             .checklists(new ArrayList<>())
-//             .grouplists(new ArrayList<>())
-//             .build();
-//
-//         //Grouplist with Checklists
-//         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
-//
-//         //Create Different Checklists
-//         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
-//         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
-//         Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
-//         mongoTemplate.insert(checklist01);
-//         mongoTemplate.insert(checklist02);
-//         mongoTemplate.insert(checklist03);
-//
-//         //Add Checklist to List and Add to Grouplist
-//         List<Checklist> checklists = new ArrayList<>();
-//         checklists.add(checklist01);
-//         checklists.add(checklist02);
-//         checklists.add(checklist03);
-//         grouplist01.setChecklists(checklists);
-//
-//         //Create Different Grouplist & Add to Repo
-//         this.grouplistRepository.insert(grouplist01);
-//         Grouplist grouplist02 = this.grouplistRepository
-//             .insert(new Grouplist("gId02", "Grouplist Title02"));
-//         Grouplist grouplist03 = this.grouplistRepository
-//             .insert(new Grouplist("gId03", "Grouplist Title03"));
-//
-//         //Add GroupList to List
-//         List<Grouplist> grouplists = new ArrayList<>();
-//         grouplists.add(grouplist01);
-//         grouplists.add(grouplist02);
-//         grouplists.add(grouplist03);
-//
-//         user.setGrouplists(grouplists); 
-//         userRepository.save(user); 
-//
-//         //Then
-//         Assertions.assertThatThrownBy(() -> {
-//             grouplistService.removefromGrouplist("123973789abjdrfklwi75", "gId01", "lId04");
-//         }).isInstanceOf(ApiRequestException.class)
-//             .hasMessage("Checklist You Wanted to Modify Doesn't Exist");
-//     }
-//
-//     @Test
-//     @DisplayName("Should Throw Exception When Removing an Existing Checklist Under a Non-Existent Grouplist")
-//     public void throwExceptionWhenRemovingExistingChecklistUnderNonExistentGrouplist() {
-//         //Given
-//         var user = User.builder()
-//             .userId("123973789abjdrfklwi75")
-//             .firstname("Victor")
-//             .lastname("Benitez")
-//             .checklists(new ArrayList<>())
-//             .grouplists(new ArrayList<>())
-//             .build();
-//
-//         //Grouplist with Checklists
-//         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
-//
-//         //Create Different Checklists
-//         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
-//         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
-//         Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
-//         mongoTemplate.insert(checklist01);
-//         mongoTemplate.insert(checklist02);
-//         mongoTemplate.insert(checklist03);
-//
-//         //Add Checklist to List and Add to Grouplist
-//         List<Checklist> checklists = new ArrayList<>();
-//         checklists.add(checklist01);
-//         checklists.add(checklist02);
-//         checklists.add(checklist03);
-//         grouplist01.setChecklists(checklists);
-//
-//         //Create Different Grouplist & Add to Repo
-//         this.grouplistRepository.insert(grouplist01);
-//         Grouplist grouplist02 = this.grouplistRepository
-//             .insert(new Grouplist("gId02", "Grouplist Title02"));
-//         Grouplist grouplist03 = this.grouplistRepository
-//             .insert(new Grouplist("gId03", "Grouplist Title03"));
-//
-//         //Add GroupList to List
-//         List<Grouplist> grouplists = new ArrayList<>();
-//         grouplists.add(grouplist01);
-//         grouplists.add(grouplist02);
-//         grouplists.add(grouplist03);
-//
-//         user.setGrouplists(grouplists);
-//         userRepository.save(user);
-//
-//         //Then
-//         Assertions.assertThatThrownBy(() -> {
-//             grouplistService.removefromGrouplist("123973789abjdrfklwi75", "gId04", "lId03");
-//         }).isInstanceOf(ApiRequestException.class)
-//             .hasMessage("Grouplist You Wanted to Modify Doesn't Exist");
-//     }
-//
-//     @Test
-//     @DisplayName("Should Delete Grouplist without Deleteing it's Checklists")
-//     public void deleteGrouplistWithoutDeletingChecklists() {
-//         //Given
-//         var user = User.builder()
-//             .userId("123973789abjdrfklwi75")
-//             .firstname("Victor")
-//             .lastname("Benitez")
-//             .checklists(new ArrayList<>())
-//             .grouplists(new ArrayList<>())
-//             .build();
-//
-//         //Grouplist with Checklists
-//         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
-//
-//         //Create Different Checklists
-//         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
-//         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
-//         Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
-//         mongoTemplate.insert(checklist01);
-//         mongoTemplate.insert(checklist02);
-//         mongoTemplate.insert(checklist03);
-//
-//         //Add Checklist to List and Add to Grouplist
-//         List<Checklist> checklists = new ArrayList<>();
-//         checklists.add(checklist01);
-//         checklists.add(checklist02);
-//         checklists.add(checklist03);
-//         grouplist01.setChecklists(checklists);
-//
-//         //Create Different Grouplist & Add to Repo
-//         this.grouplistRepository.insert(grouplist01);
-//         Grouplist grouplist02 = this.grouplistRepository
-//             .insert(new Grouplist("gId02", "Grouplist Title02"));
-//         Grouplist grouplist03 = this.grouplistRepository
-//             .insert(new Grouplist("gId03", "Grouplist Title03"));
-//
-//         //Add GroupList to List
-//         List<Grouplist> grouplists = new ArrayList<>();
-//         grouplists.add(grouplist01);
-//         grouplists.add(grouplist02);
-//         grouplists.add(grouplist03);
-//
-//         user.setGrouplists(grouplists);
-//         userRepository.save(user);
-//
-//         //When 
-//         grouplistService.deleteGrouplist("123973789abjdrfklwi75", "gId01", false);
-//
-//         //Then
-//         Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getChecklists().size()).isEqualTo(3);
-//         Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getGrouplists().size()).isEqualTo(2);
-//         Assertions.assertThat(mongoTemplate.findAll(Checklist.class).size()).isEqualTo(3);
-//     }
-//
-//
-//     @Test
-//     @DisplayName("Should Delete Grouplist And Delete it's Checklists")
-//     public void deleteGrouplistAndDeleteChecklists() {
-//         //Given
-//         var user = User.builder()
-//             .userId("123973789abjdrfklwi75")
-//             .firstname("Victor")
-//             .lastname("Benitez")
-//             .checklists(new ArrayList<>())
-//             .grouplists(new ArrayList<>())
-//             .build();
-//
-//         //Grouplist with Checklists
-//         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
-//
-//         //Create Different Checklists
-//         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
-//         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
-//         Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
-//         mongoTemplate.insert(checklist01);
-//         mongoTemplate.insert(checklist02);
-//         mongoTemplate.insert(checklist03);
-//
-//         //Add Checklist to List and Add to Grouplist
-//         List<Checklist> checklists = new ArrayList<>();
-//         checklists.add(checklist01);
-//         checklists.add(checklist02);
-//         checklists.add(checklist03);
-//         grouplist01.setChecklists(checklists);
-//
-//         //Create Different Grouplist & Add to Repo
-//         this.grouplistRepository.insert(grouplist01);
-//         Grouplist grouplist02 = this.grouplistRepository
-//             .insert(new Grouplist("gId02", "Grouplist Title02"));
-//         Grouplist grouplist03 = this.grouplistRepository
-//             .insert(new Grouplist("gId03", "Grouplist Title03"));
-//
-//         //Add GroupList to List
-//         List<Grouplist> grouplists = new ArrayList<>();
-//         grouplists.add(grouplist01);
-//         grouplists.add(grouplist02);
-//         grouplists.add(grouplist03);
-//
-//         user.setGrouplists(grouplists);
-//         userRepository.save(user);
-//
-//         //When 
-//         grouplistService.deleteGrouplist("123973789abjdrfklwi75", "gId01", true);
-//
-//         //Then
-//         Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getChecklists().size()).isEqualTo(0);
-//         Assertions.assertThat(mongoTemplate.findAll(User.class).get(0).getGrouplists().size()).isEqualTo(2);
-//         Assertions.assertThat(mongoTemplate.findAll(Checklist.class).size()).isEqualTo(0);
-//     }
-//     
-//     @Test
-//     @DisplayName("Should Throw Exception When Deleting Non-Existent Grouplist")
-//     public void throwExceptionDeletingNonExistentGrouplist() {
-//         //Given
-//         var user = User.builder()
-//             .userId("123973789abjdrfklwi75")
-//             .firstname("Victor")
-//             .lastname("Benitez")
-//             .checklists(new ArrayList<>())
-//             .grouplists(new ArrayList<>())
-//             .build();
-//
-//         //Grouplist with Checklists
-//         Grouplist grouplist01 = new Grouplist("gId01", "Grouplist Title01");
-//
-//         //Create Different Checklists
-//         Checklist checklist01 = new Checklist("lId01", "Checklist Title 01");
-//         Checklist checklist02 = new Checklist("lId02", "Checklist Title 02");
-//         Checklist checklist03 = new Checklist("lId03", "Checklist Title 03");
-//         mongoTemplate.insert(checklist01);
-//         mongoTemplate.insert(checklist02);
-//         mongoTemplate.insert(checklist03);
-//
-//         //Add Checklist to List and Add to Grouplist
-//         List<Checklist> checklists = new ArrayList<>();
-//         checklists.add(checklist01);
-//         checklists.add(checklist02);
-//         checklists.add(checklist03);
-//         grouplist01.setChecklists(checklists);
-//
-//         //Create Different Grouplist & Add to Repo
-//         this.grouplistRepository.insert(grouplist01);
-//         Grouplist grouplist02 = this.grouplistRepository
-//             .insert(new Grouplist("gId02", "Grouplist Title02"));
-//         Grouplist grouplist03 = this.grouplistRepository
-//             .insert(new Grouplist("gId03", "Grouplist Title03"));
-//
-//         //Add GroupList to List
-//         List<Grouplist> grouplists = new ArrayList<>();
-//         grouplists.add(grouplist01);
-//         grouplists.add(grouplist02);
-//         grouplists.add(grouplist03);
-//
-//         user.setGrouplists(grouplists);
-//         userRepository.save(user);
-//
-//         //Then
-//         Assertions.assertThatThrownBy(() -> {
-//             grouplistService.deleteGrouplist("123973789abjdrfklwi75", "gId04", true);
-//         }).isInstanceOf(ApiRequestException.class)
-//             .hasMessage("Grouplist You Wanted to Delete Doesn't Exist");
-//     }
-// }
+package com.academicdashboard.backend.checklist;
+
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import com.academicdashboard.backend.exception.ApiRequestException;
+import com.academicdashboard.backend.user.UserRepository;
+
+@Testcontainers
+@DataMongoTest
+public class GrouplistServiceTest {
+
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private GrouplistRepository grouplistRepository;
+    @Autowired
+    private ChecklistRepository checklistRepository;
+    @Autowired
+    private CheckpointRepository checkpointRepository;
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    private TestData testData;
+    private GrouplistService grouplistService;
+
+    @BeforeEach
+    public void setUp() {
+        this.grouplistService = new GrouplistService(
+                grouplistRepository, 
+                mongoTemplate);
+        this.testData = new TestData(
+                userRepository, 
+                grouplistRepository, 
+                checklistRepository, 
+                checkpointRepository);
+        testData.populateDatabase();
+    }
+
+    @AfterEach
+    public void cleanup() {
+        testData.cleanupDatabase();
+    }
+
+    @Test
+    @DisplayName("Should Create a New Grouplist Under Student")
+    public void shouldCreateNewGrouplist() {
+        //When
+        Grouplist returnedValue = grouplistService.createGrouplist("ju7db63uy678erdybncpo", "New Grouplist Title");
+
+        //Then
+        Assertions.assertThat(grouplistRepository
+                .findGrouplistByGroupId(returnedValue.getGroupId())
+                .get())
+            .isEqualTo(returnedValue);
+        Assertions.assertThat(userRepository
+                .findUserByUsername("testuser")
+                .get()
+                .getGrouplists()
+                .contains(returnedValue))
+            .isTrue();
+    }
+
+    @Test
+    @DisplayName("Should Throw an ApiRequestException When Creating New Grouplist Under Non-existent User")
+    public void throwExceptionInsertingGrouplistInNonexistentUser() {
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.createGrouplist("XXXXXXXXXXXXXXXXXXXXX", "New Grouplist Title");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("User Not Found");
+    }
+
+    @Test
+    @DisplayName("Should Modify an Existing Grouplist")
+    public void modifyExistingGrouplistTitle() {
+        //When 
+        Grouplist expectedValue01 = grouplistService.modifyGrouplist("groupIdA", "New Title For groupIdA");
+        Grouplist expectedValue02 = grouplistService.modifyGrouplist("groupIdB", "New Title For groupIdB");
+
+        //Then
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdA").get()).isEqualTo(expectedValue01);
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdB").get()).isEqualTo(expectedValue02);
+    }
+
+    @Test
+    @DisplayName("Should Throw an ApiRequestException When Modifying Non-existent Grouplist")
+    public void throwExceptionModifyingNonexistentGrouplist() {
+        //When-Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.modifyGrouplist("XXXXX", "New Title For XXXXX");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Grouplist You Wanted to Modify Doesn't Exist");
+    }
+
+    @Test
+    @DisplayName("Should Create a New Checklist Under an Existing Grouplist")
+    public void createNewChecklistUnderExistingGrouplist() {
+        //When 
+        grouplistService.addNewToGrouplist("groupIdA", "New Checklist Under GrouplistIdA");
+        grouplistService.addNewToGrouplist("groupIdB", "New Checklist Under GrouplistIdB");
+
+        //Then
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdA").get().getChecklists().size()).isEqualTo(3);
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdB").get().getChecklists().size()).isEqualTo(3);
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdA").get().getChecklists().get(2).getTitle()).isEqualTo("New Checklist Under GrouplistIdA");
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdB").get().getChecklists().get(2).getTitle()).isEqualTo("New Checklist Under GrouplistIdB");
+    }
+
+    @Test
+    @DisplayName("Should Throw an ApiRequestException When Adding New Checklist to Non-existent Grouplist")
+    public void throwExceptionAddingNewChecklistToNonExistingGrouplist() {
+        //When-Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.addNewToGrouplist("XXXXX", "New Checklist Under GrouplistXXX");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Grouplist You Wanted to Modify Doesn't Exist");
+    }
+
+    @Test
+    @DisplayName("Should Add an Existing Checklist Under an Existing Grouplist")
+    public void addExistingChecklistUnderExistingGrouplist() {
+        //When 
+        grouplistService.addExistToGrouplist("ju7db63uy678erdybncpo", "groupIdA", "listIdC1");
+        grouplistService.addExistToGrouplist("ju7db63uy678erdybncpo", "groupIdB", "listIdD");
+
+        //Then
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdA").get().getChecklists().size()).isEqualTo(3);
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdB").get().getChecklists().size()).isEqualTo(3);
+        Assertions.assertThat(userRepository.findUserByUsername("testuser").get().getChecklists().isEmpty()).isTrue();
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdA").get().getChecklists().get(2)).isEqualTo(checklistRepository.findChecklistByListId("listIdC1").get());
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdB").get().getChecklists().get(2)).isEqualTo(checklistRepository.findChecklistByListId("listIdD").get());
+    }
+
+    @Test
+    @DisplayName("Should Throw Exception When Adding Checklist Under Grouplist In Non-Existent User")
+    public void shouldThrowExceptionAddingChecklistUnderGrouplistInNonExistentUser() {
+        //When-Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.addExistToGrouplist("XXXXXXXXXXXXXXXXXXXXX", "groupIdA", "listIdC1");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("User Not Found");
+    }
+
+    @Test
+    @DisplayName("Should Throw Exception When Adding a Non-Existent Checklist Under an Existing Grouplist")
+    public void shouldThrowExceptionAddingNonExistentChecklistUnderExistingGrouplist() {
+        //When-Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.addExistToGrouplist("ju7db63uy678erdybncpo", "groupIdA", "XXXXX");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Checklist You Wanted to Modify Doesn't Exist");
+    }
+
+    @Test
+    @DisplayName("Should Throw Exception When Adding an Existent Checklist Under a Non-Existent Grouplist")
+    public void shouldThrowExceptionAddingExistingChecklistUnderNonExistentGrouplist() {
+        //When-Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.addExistToGrouplist("ju7db63uy678erdybncpo", "XXXXX", "listIdC1");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Grouplist You Wanted to Modify Doesn't Exist");
+    }
+
+    @Test
+    @DisplayName("Should Remove an Existing Checklist Under an Existing Grouplist")
+    public void removeExistingChecklistUnderExistingGrouplist() {
+        //When 
+        grouplistService.removefromGrouplist("ju7db63uy678erdybncpo", "groupIdA", "listIdA1");
+        grouplistService.removefromGrouplist("ju7db63uy678erdybncpo", "groupIdB", "listIdB2");
+
+        //Then
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdA").get().getChecklists().size()).isEqualTo(1);
+        Assertions.assertThat(grouplistRepository.findGrouplistByGroupId("groupIdB").get().getChecklists().size()).isEqualTo(1);
+        Assertions.assertThat(userRepository.findUserByUsername("testuser").get().getChecklists().size()).isEqualTo(4);
+        Assertions.assertThat(userRepository.findUserByUsername("testuser").get().getChecklists().contains(checklistRepository.findChecklistByListId("listIdA1").get())).isTrue();
+        Assertions.assertThat(userRepository.findUserByUsername("testuser").get().getChecklists().contains(checklistRepository.findChecklistByListId("listIdB2").get())).isTrue();
+        Assertions.assertThat(checklistRepository.findAll().size()).isEqualTo(6);
+    }
+
+    @Test
+    @DisplayName("Should Throw Exception When Removing Checklist Under Grouplist Under Non-existent User")
+    public void throwExceptionWhenRemovingChecklistUnderGrouplistUnderNonexistentUser() {
+        //When-Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.removefromGrouplist("XXXXXXXXXXXXXXXXXXXXX", "groupIdA", "listIdA1");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("User Not Found");
+    }
+
+    @Test
+    @DisplayName("Should Throw Exception When Removing a Non-Existent Checklist Under an Existing Grouplist")
+    public void throwExceptionWhenRemovingNonExistentChecklistUnderExistingGrouplist() {
+        //When-Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.removefromGrouplist("ju7db63uy678erdybncpo", "groupIdA", "XXXXX");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Checklist You Wanted to Modify Doesn't Exist");
+    }
+
+    @Test
+    @DisplayName("Should Throw Exception When Removing an Existing Checklist Under a Non-Existent Grouplist")
+    public void throwExceptionWhenRemovingExistingChecklistUnderNonExistentGrouplist() {
+        //When-Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.removefromGrouplist("ju7db63uy678erdybncpo", "XXXXX", "listIdA1");
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Grouplist You Wanted to Modify Doesn't Exist");
+    }
+
+    @Test
+    @DisplayName("Should Delete Grouplist without Deleteing it's Checklists")
+    public void deleteGrouplistWithoutDeletingChecklists() {
+        //When 
+        grouplistService.deleteGrouplist("ju7db63uy678erdybncpo", "groupIdA", false);
+        grouplistService.deleteGrouplist("ju7db63uy678erdybncpo", "groupIdB", false);
+
+        //Then
+        Assertions.assertThat(userRepository.findUserByUsername("testuser").get().getGrouplists().isEmpty()).isTrue();
+        Assertions.assertThat(userRepository.findUserByUsername("testuser").get().getChecklists().size()).isEqualTo(6);
+        Assertions.assertThat(checklistRepository.findChecklistByListId("listIdA1")).isNotNull();
+        Assertions.assertThat(checklistRepository.findChecklistByListId("listIdA2")).isNotNull();
+        Assertions.assertThat(checklistRepository.findChecklistByListId("listIdB1")).isNotNull();
+        Assertions.assertThat(checklistRepository.findChecklistByListId("listIdB2")).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should Delete Grouplist And Delete it's Checklists")
+    public void deleteGrouplistAndDeleteChecklists() {
+        //When 
+        grouplistService.deleteGrouplist("ju7db63uy678erdybncpo", "groupIdA", true);
+        grouplistService.deleteGrouplist("ju7db63uy678erdybncpo", "groupIdB", true);
+
+        //Then
+        Assertions.assertThat(userRepository.findUserByUsername("testuser").get().getGrouplists().isEmpty()).isTrue();
+        Assertions.assertThat(userRepository.findUserByUsername("testuser").get().getChecklists().size()).isEqualTo(2);
+        Assertions.assertThat(checklistRepository.findAll().size()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Should Throw Exception When Deleting Grouplist In Non-Existent User")
+    public void throwExceptionDeletingGrouplistInNonExistentUser() {
+        //When-Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.deleteGrouplist("XXXXXXXXXXXXXXXXXXXXX", "groupIdA", true);
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("User Not Found");
+    }
+
+    @Test
+    @DisplayName("Should Throw Exception When Deleting Non-Existent Grouplist")
+    public void throwExceptionDeletingNonExistentGrouplist() {
+        //When-Then
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.deleteGrouplist("ju7db63uy678erdybncpo", "XXXXX", true);
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Grouplist You Wanted to Delete Doesn't Exist");
+
+        Assertions.assertThatThrownBy(() -> {
+            grouplistService.deleteGrouplist("ju7db63uy678erdybncpo", "XXXXX", false);
+        }).isInstanceOf(ApiRequestException.class)
+            .hasMessage("Grouplist You Wanted to Delete Doesn't Exist");
+    }
+}
