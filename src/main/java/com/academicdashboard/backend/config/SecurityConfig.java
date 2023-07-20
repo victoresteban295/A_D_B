@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     // private final AuthenticationProvider authenticationProvider;
-    private final LogoutHandler logoutHandler;
+    // private final LogoutHandler logoutHandler;
     private final RsaKeyProperties rsaKeys;
 
     
@@ -48,11 +48,11 @@ public class SecurityConfig {
             })
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
             .sessionManagement(
-                session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .logout(logout -> logout
-                    .logoutUrl("")
-                    .addLogoutHandler(logoutHandler)
-                    .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()));
+                session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            // .logout(logout -> logout
+            //         .logoutUrl("")
+            //         .addLogoutHandler(logoutHandler)
+            //         .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()));
             
         return http.build();
     }
