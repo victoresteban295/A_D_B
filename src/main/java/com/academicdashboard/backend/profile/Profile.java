@@ -16,7 +16,7 @@ public class Profile {
 
     @Id
     private ObjectId id; //MongoDB ObjectId
-    private String profileId; //Public Id (JNanoId)
+    private String username;
 
     //Personal Information
     private String firstName;

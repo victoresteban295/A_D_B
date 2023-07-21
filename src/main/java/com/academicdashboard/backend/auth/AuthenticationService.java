@@ -14,9 +14,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.academicdashboard.backend.config.JwtService;
+import com.academicdashboard.backend.exception.ApiRequestException;
 import com.academicdashboard.backend.profile.Professor;
+import com.academicdashboard.backend.profile.ProfessorRepository;
 import com.academicdashboard.backend.profile.Profile;
 import com.academicdashboard.backend.profile.Student;
+import com.academicdashboard.backend.profile.StudentRepository;
 import com.academicdashboard.backend.token.Token;
 import com.academicdashboard.backend.token.TokenRepository;
 import com.academicdashboard.backend.user.Role;
@@ -35,6 +38,8 @@ public class AuthenticationService {
 
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
+    private final StudentRepository studentRepository;
+    private final ProfessorRepository professorRepository;
     private final MongoTemplate mongoTemplate;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -47,15 +52,21 @@ public class AuthenticationService {
         Role role;
         String userId = NanoIdUtils.randomNanoId();
 
-        if(request.getProfileType() == "STUDENT") {
-            profile = new Student();
-            profile.setFirstName(request.getFirstName());
-            profile.setLastName(request.getLastName());
+        if(request.getProfileType().equals("STUDENT")) {
+            profile = studentRepository
+                .insert(Student.builder()
+                        .username(request.getUsername())
+                        .firstName(request.getFirstName())
+                        .lastName(request.getLastName())
+                        .build());
             role = Role.STUDENT;
         } else {
-            profile = new Professor();
-            profile.setFirstName(request.getFirstName());
-            profile.setLastName(request.getLastName());
+            profile = professorRepository
+                .insert(Professor.builder()
+                        .username(request.getUsername())
+                        .firstName(request.getFirstName())
+                        .lastName(request.getLastName())
+                        .build());
             role = Role.PROFESSOR;
         }
 
@@ -121,17 +132,17 @@ public class AuthenticationService {
     }
 
     //Request New Access Token (JWT) Using Refresh Token
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public AuthenticationResponse refreshToken(HttpServletRequest request) {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
         final String username;
 
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return;
+            throw new ApiRequestException("No Refresh Token Found");
         }
 
-        refreshToken = authHeader.substring(7); //Extracts JWT (Removes "Bearer ")
-        username = jwtService.extractUsername(refreshToken); //Extract username from JWT
+        refreshToken = authHeader.substring(7); //Extracts RefreshToken (Removes "Bearer ")
+        username = jwtService.extractUsername(refreshToken); //Extract username from refreshToken
 
         if(username != null) {
             var user = this.userRepository.findUserByUsername(username)
@@ -149,8 +160,13 @@ public class AuthenticationService {
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .build();
-                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+
+                return authResponse;
+            } else {
+                throw new ApiRequestException("Refresh Token Not Valid");
             }
+        } else {
+            throw new UsernameNotFoundException("User Not Found");
         }
     }
 
