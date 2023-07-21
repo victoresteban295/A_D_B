@@ -1,10 +1,12 @@
 package com.academicdashboard.backend.auth;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,7 +23,10 @@ import com.academicdashboard.backend.user.Role;
 import com.academicdashboard.backend.user.User;
 import com.academicdashboard.backend.user.UserRepository;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -78,11 +83,13 @@ public class AuthenticationService {
 
         //Create new JWT Token for Response
         var jwtToken = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
         saveUserToken(userId, jwtToken); //Build & Store Token Instance 
 
         return AuthenticationResponse.builder()
             .username(request.getUsername())
-            .token(jwtToken)
+            .accessToken(jwtToken)
+            .refreshToken(refreshToken)
             .build();
     }
 
@@ -101,13 +108,50 @@ public class AuthenticationService {
 
         //Create new JWT Token for Response
         var jwtToken = jwtService.generateToken(user); //Generate JWT
+        var refreshToken = jwtService.generateRefreshToken(user);//Generate Refresh Token
         revokeAllUserTokens(user.getUserId()); //Expire & Revoke All Old Tokens
-        saveUserToken(user.getUserId(), jwtToken); //Save New Token to Repo
+        saveUserToken(user.getUserId(), jwtToken); //Token Instance out of JWT
+        saveUserToken(user.getUserId(), refreshToken); //Token Instance out of Refresh Token
 
         return AuthenticationResponse.builder()
             .username(request.getUsername())
-            .token(jwtToken)
+            .accessToken(jwtToken)
+            .refreshToken(refreshToken)
             .build();
+    }
+
+    //Request New Access Token (JWT) Using Refresh Token
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        final String refreshToken;
+        final String username;
+
+        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return;
+        }
+
+        refreshToken = authHeader.substring(7); //Extracts JWT (Removes "Bearer ")
+        username = jwtService.extractUsername(refreshToken); //Extract username from JWT
+
+        if(username != null) {
+            var user = this.userRepository.findUserByUsername(username)
+                .orElseThrow();
+
+            var isTokenValid = tokenRepository.findByToken(refreshToken)
+                .map(t -> !t.isExpired() && !t.isRevoked())
+                .orElse(false);
+
+            if(jwtService.isTokenValid(refreshToken, user) || isTokenValid) {
+                var accessToken = jwtService.generateToken(user);
+            revokeAllUserTokens(user.getUserId()); //Expire & Revoke All Old Tokens
+            saveUserToken(user.getUserId(), accessToken); //Save New Token to Repo
+                var authResponse = AuthenticationResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .build();
+                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+            }
+        }
     }
 
     /*************** Private Methods ***************/

@@ -49,6 +49,8 @@ public class User implements UserDetails {
     private String email;
 
     private String phone;
+
+    @Indexed(unique = true)
     private String username;
     private String password;
     private Role role;

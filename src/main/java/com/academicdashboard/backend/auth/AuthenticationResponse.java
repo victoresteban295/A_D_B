@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AuthenticationResponse {
     private String username;
-    private String token;
+    private String accessToken; //JWT
+    private String refreshToken;
 }
