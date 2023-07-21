@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -38,10 +37,19 @@ public class AuthenticationController {
                 HttpStatus.OK);
     }
 
+    // @PostMapping("/refresh-token")
+    // public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    //     //Request New Access Token (JWT) Using Refresh Token
+    //     authenticationService.refreshToken(request, response);
+    // }
+
     @PostMapping("/refresh-token")
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        //Request New Access Token (JWT) Using Refresh Token
-        authenticationService.refreshToken(request, response);
+    public  ResponseEntity<AuthenticationResponse> refreshToken(
+            HttpServletRequest request) {
+
+        return new ResponseEntity<AuthenticationResponse>(
+                authenticationService.refreshToken(request),
+                HttpStatus.OK);
     }
 
 }
